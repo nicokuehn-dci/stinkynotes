@@ -38,7 +38,14 @@ def create_note_json(user_id, note_id, note_content, note_private):
         with open(f"./JSON/{user_id}.json", "w") as file:
             json.dump(data, file, indent=4)
 
-        
+def print_user_notes(user_id):
+    with open(f"./JSON/{user_id}.json", "r") as file:
+        data = json.load(file)
+        notes = data["notes"]
+    print(f"{user_id} has notes:")
+    for note_id, note_data in notes.items():
+        print(f"Note ID: {note_id} Content: {note_data['note_content']}")
+
     
     
     
@@ -47,7 +54,7 @@ def show_menu():
     print("1. Add/Edit User")
     print("2. Delete User")
     print("3. Create Note") 
-    print("4. Edit User Notes")
+    print("4. Edit User Notes") # check if user has more notes. add a Note MENU
     
     print("0. Exit")
 
@@ -106,6 +113,15 @@ while True:
             continue
     elif choice == "4":
         print("You selected: Edit Notes")
+        user_id = input("Log in to edit notes for: ")
+        password = input("Enter password: ")
+        if password == users[user_id]["password"]:
+            print("Logged in successfully.")
+            print_user_notes(user_id)
+            #code
+        else:
+            print("Incorrect password.")
+            continue
 
     elif choice == "0":
         print("Exiting the program. Goodbye!")
