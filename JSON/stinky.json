@@ -1,0 +1,18 @@
+{ "naim_id1" : {
+    "fullname" : "Naim Burrack",
+    "password" : "123456"
+},
+    "kate_id2" : {
+        "fullname" : "Ekaterina Nestoklon",
+        "password" : "123456"
+    },
+    "nico_id3" :{
+        "fullname" : "Nico Kuehn",
+        "password" : "123456"
+    },
+    "chris_id4" : {
+        "fullname" : "Christoph Schneider",
+        "password" : "123456"
+
+    }
+}
