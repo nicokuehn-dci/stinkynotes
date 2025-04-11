@@ -46,9 +46,8 @@ def show_menu():
     print("\n--- Menu ---")
     print("1. Add/Edit User")
     print("2. Delete User")
-    print("3. Create Note") #dont forget to add datetime stuff
-    print("5. Edit Note")
-    print("6. Delete Note")
+    print("3. Create Note") 
+    print("4. Edit User Notes")
     
     print("0. Exit")
 
@@ -105,13 +104,9 @@ while True:
         else:
             print("Incorrect password.")
             continue
-        # Publish Note logic here
     elif choice == "4":
         print("You selected: Edit Notes")
-        # Edit Notes logic here
-    elif choice == "5":
-        print("You selected: Delete Notes")
-        # Delete Notes logic here
+
     elif choice == "0":
         print("Exiting the program. Goodbye!")
         break
