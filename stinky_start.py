@@ -37,7 +37,7 @@ def create_note_json(user_id, note_id, note_content, note_private):
         data["notes"][note_id] = note_data
         with open(f"./JSON/{user_id}.json", "w") as file:
             json.dump(data, file, indent=4)
-            
+
         
     
     
@@ -94,9 +94,9 @@ while True:
             note_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
             note_content = input("Enter note content: ")
             note_private = input("Is this note private? (yes/no): ").lower()
-            if note_private == "yes":
+            if note_private == "yes" or note_private == "y":
                 note_private = True
-            elif note_private == "no":
+            elif note_private == "no" or note_private == "n":
                 note_private = False
             else:
                 print("Invalid input. Defaulting to public.")
