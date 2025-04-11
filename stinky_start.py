@@ -28,15 +28,27 @@ def delete_user_json(user_id):
     except FileNotFoundError:
         print(f"User {user_id}.json file not found.")
 
+def create_note_json(user_id, note_id, note_content, note_private):
+        note_data = {
+        "note_content": note_content,
+        "note_private": note_private}
+        with open(f"./JSON/{user_id}.json", "r") as file:
+            data = json.load(file)
+        data["notes"][note_id] = note_data
+        with open(f"./JSON/{user_id}.json", "w") as file:
+            json.dump(data, file, indent=4)
+            
+        
+    
+    
     
 def show_menu():
     print("\n--- Menu ---")
     print("1. Add/Edit User")
     print("2. Delete User")
-    print("3. Leave Note")
-    print("4. Publish Note") #dont forget to add datetime stuff
-    print("5. Edit Notes")
-    print("6. Delete Notes")
+    print("3. Create Note") #dont forget to add datetime stuff
+    print("5. Edit Note")
+    print("6. Delete Note")
     
     print("0. Exit")
 
@@ -74,7 +86,25 @@ while True:
         else:
             print(f"User {user_id} not found.")
     elif choice == "3":
-        print("You selected: Publish Note")
+        print("You selected: Create Note")
+        user_id = input("Log in to create a note for: ")
+        password = input("Enter password: ")
+        if password == users[user_id]["password"]:
+            print("Logged in successfully.")
+            note_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            note_content = input("Enter note content: ")
+            note_private = input("Is this note private? (yes/no): ").lower()
+            if note_private == "yes":
+                note_private = True
+            elif note_private == "no":
+                note_private = False
+            else:
+                print("Invalid input. Defaulting to public.")
+                note_private = True
+            create_note_json(user_id, note_id, note_content, note_private)
+        else:
+            print("Incorrect password.")
+            continue
         # Publish Note logic here
     elif choice == "4":
         print("You selected: Edit Notes")
