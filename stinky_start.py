@@ -74,7 +74,8 @@ def show_menu():
     print("1. Add/Edit User")
     print("2. Delete User")
     print("3. Create Note") 
-    print("4. Edit User Notes") # check if user has more notes. add a Note MENU
+    print("4. Edit User Notes")
+ #   print("5. Print All Public Notes") Create a list of all public notes from all users
     
     print("0. Exit")
 
@@ -148,5 +149,3 @@ while True:
         break
     else:
         print("Invalid option. Please try again.")
-
-print(users)
