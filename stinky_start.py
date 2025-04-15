@@ -30,6 +30,7 @@ def check_and_install_dependencies():
 
             # Handle conditional dependencies (like ; platform_system == 'Windows')
             parts = dependency.split(";")
+            
             package_spec = parts[0].strip()
             condition = parts[1].strip() if len(parts) > 1 else None
 
