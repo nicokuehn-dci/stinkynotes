@@ -4,12 +4,6 @@ import importlib.util
 import platform
 
 def install_and_import(package, import_name=None, pip_name=None):
-    """
-    Prüft, ob ein Paket installiert ist, und installiert es ggf. per pip.
-    - package: Name für importlib/util (z.B. 'stringcolor')
-    - import_name: Name für import (z.B. 'stringcolor')
-    - pip_name: Name für pip (z.B. 'windows-curses')
-    """
     if import_name is None:
         import_name = package
     if pip_name is None:
@@ -29,13 +23,15 @@ if platform.system() == "Windows":
 import os
 import datetime
 import json
-import random
 import stringcolor
 import curses
 
 # =========================
 # Hilfsfunktionen
 # =========================
+
+def colored_input(prompt, color="orange"):
+    return input(stringcolor.cs(prompt, color))
 
 def read_users(file_path):
     with open(file_path, 'r') as file:
@@ -52,34 +48,75 @@ def create_user_json(user_id):
         "notes": {}
     }
     os.makedirs("./JSON", exist_ok=True)
-    with open(f"./JSON/{user_id}.json", "w") as file:
-        json.dump(data, file, indent=4)
+    user_file = f"./JSON/{user_id}.json"
+    if not os.path.exists(user_file):
+        with open(user_file, "w") as file:
+            json.dump(data, file, indent=4)
 
 def delete_user_json(user_id):
+    user_file = f"./JSON/{user_id}.json"
     try:
-        os.remove(f"./JSON/{user_id}.json")
-        print(f"User {user_id}.json file deleted successfully.")
+        os.remove(user_file)
+        print(stringcolor.cs(f"User {user_id}.json file deleted successfully.", "yellow"))
     except FileNotFoundError:
-        print(f"User {user_id}.json file not found.")
+        print(stringcolor.cs(f"User {user_id}.json file not found.", "red"))
 
 def create_note_json(user_id, note_id, note_content, note_private):
+    user_file = f"./JSON/{user_id}.json"
+    if not os.path.exists(user_file):
+        print(stringcolor.cs(f"User file {user_file} does not exist!", "red"))
+        return
     note_data = {
         "note_content": note_content,
         "note_private": note_private
     }
-    with open(f"./JSON/{user_id}.json", "r") as file:
+    with open(user_file, "r") as file:
         data = json.load(file)
     data["notes"][note_id] = note_data
-    with open(f"./JSON/{user_id}.json", "w") as file:
+    with open(user_file, "w") as file:
         json.dump(data, file, indent=4)
 
-def print_user_notes(user_id):
-    with open(f"./JSON/{user_id}.json", "r") as file:
+def get_user_notes(user_id):
+    user_file = f"./JSON/{user_id}.json"
+    if not os.path.exists(user_file):
+        return {}
+    with open(user_file, "r") as file:
         data = json.load(file)
-        notes = data["notes"]
-    print(f"{user_id} has notes:")
+        return data["notes"]
+
+def print_user_notes(user_id):
+    notes = get_user_notes(user_id)
+    if not notes:
+        print(stringcolor.cs(f"{user_id} has no notes.", "yellow"))
+        return
+    print(stringcolor.cs(f"{user_id} has notes:", "yellow"))
     for note_id, note_data in notes.items():
-        print(f"Note ID: {note_id} Content: {note_data['note_content']}")
+        print(stringcolor.cs(f"Note ID: {note_id} Content: {note_data['note_content']}", "cyan"))
+
+def edit_note_menu(user_id):
+    while True:
+        notes = get_user_notes(user_id)
+        if not notes:
+            print(stringcolor.cs("No notes to edit.", "yellow"))
+            return
+        note_ids = list(notes.keys())
+        options = [f"{note_id}: {notes[note_id]['note_content']}" for note_id in note_ids]
+        options.append("Back")
+        idx = cursor_menu(options, title=stringcolor.cs("--- Select Note to Edit ---", "yellow").bold())
+        if idx == len(options) - 1:
+            # "Back" gewählt
+            break
+        note_id = note_ids[idx]
+        print(stringcolor.cs(f"Editing Note: {note_id}", "yellow"))
+        new_content = colored_input("Enter new note content: ")
+        # Änderung speichern
+        user_file = f"./JSON/{user_id}.json"
+        with open(user_file, "r") as file:
+            data = json.load(file)
+        data["notes"][note_id]['note_content'] = new_content
+        with open(user_file, "w") as file:
+            json.dump(data, file, indent=4)
+        print(stringcolor.cs("Note updated successfully.", "green"))
 
 # =========================
 # Cursor-Menü Funktion
@@ -88,11 +125,12 @@ def print_user_notes(user_id):
 def cursor_menu(options, title="--- Menu ---"):
     def inner(stdscr):
         curses.curs_set(0)
-        curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_YELLOW)  # yellow highlight
         current_row = 0
         while True:
             stdscr.clear()
-            stdscr.addstr(0, 0, title)
+            stdscr.addstr(0, 0, str(title))
             for idx, row in enumerate(options):
                 x = 2
                 y = idx + 2
@@ -133,71 +171,78 @@ if not os.path.exists('./JSON/stinky.json'):
 users = read_users('./JSON/stinky.json') # main dictionary with all users
 
 while True:
-    choice_idx = cursor_menu(menu_options)
+    choice_idx = cursor_menu(menu_options, title=stringcolor.cs("--- StinkyNotes Menu ---", "yellow").bold())
     choice = str(choice_idx + 1) if choice_idx < 4 else "0"
 
     if choice == "1":
-        print("You selected: Add/Edit User")
-        user_id = input("Add user ID: ")
+        print(stringcolor.cs("You selected: Add/Edit User", "yellow"))
+        user_id = colored_input("Add user ID: ")
         if user_id in users:
-            print(f"User {user_id} already exists. You can change Full+name and Password.")
-            fullname = input("Change Full Name: ")
-            password = input("Change Password: ")
+            print(stringcolor.cs(f"User {user_id} already exists. You can change Fullname and Password.", "cyan"))
+            fullname = colored_input("Change Full Name: ")
+            password = colored_input("Change Password: ")
         else:          
-            fullname = input("Add Full Name: ")
-            password = input("Add Password: ")
+            fullname = colored_input("Add Full Name: ")
+            password = colored_input("Add Password: ")
         users[user_id] = {
             "fullname": fullname,
             "password": password
         }
         write_users('./JSON/stinky.json', users)
         create_user_json(user_id)
-        print(f"User {user_id} added successfully.")
+        print(stringcolor.cs(f"User {user_id} added successfully.", "green"))
     elif choice == "2":
-        print("You selected: Delete User")
-        user_id = input("Enter user ID to delete: ")
+        print(stringcolor.cs("You selected: Delete User", "yellow"))
+        user_id = colored_input("Enter user ID to delete: ")
         if user_id in users:
             delete_user_json(user_id)
             users.pop(user_id)
             write_users('./JSON/stinky.json', users)
-            print(f"User {user_id} deleted successfully.")
+            print(stringcolor.cs(f"User {user_id} deleted successfully.", "green"))
         else:
-            print(f"User {user_id} not found.")
+            print(stringcolor.cs(f"User {user_id} not found.", "red"))
     elif choice == "3":
-        print("You selected: Create Note")
-        user_id = input("Log in to create a note for: ")
-        password = input("Enter password: ")
+        print(stringcolor.cs("You selected: Create Note", "yellow"))
+        user_id = colored_input("Log in to create a note for: ")
+        password = colored_input("Enter password: ")
         if user_id in users and password == users[user_id]["password"]:
-            print("Logged in successfully.")
+            print(stringcolor.cs("Logged in successfully.", "green"))
             note_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-            note_content = input("Enter note content: ")
-            note_private = input("Is this note private? (yes/no): ").lower()
-            if note_private in ("yes", "y"):
-                note_private = True
-            elif note_private in ("no", "n"):
-                note_private = False
-            else:
-                print("Invalid input. Defaulting to public.")
-                note_private = True
+            note_content = colored_input("Enter note content: ")
+            # Eingabe-Schleife für private/public
+            while True:
+                note_private_input = colored_input("Is this note private? (yes/no): ").strip().lower()
+                if note_private_input in ("yes", "y"):
+                    note_private = True
+                    break
+                elif note_private_input in ("no", "n"):
+                    note_private = False
+                    break
+                elif note_private_input == "":
+                    note_private = False
+                    print(stringcolor.cs("No input. Defaulting to public note.", "yellow"))
+                    break
+                else:
+                    print(stringcolor.cs("Please enter 'yes' or 'no'.", "red"))
             create_note_json(user_id, note_id, note_content, note_private)
+            print(stringcolor.cs("Note created successfully.", "green"))
         else:
-            print("Incorrect user or password.")
+            print(stringcolor.cs("Incorrect user or password.", "red"))
             continue
     elif choice == "4":
-        print("You selected: Edit Notes")
-        user_id = input("Log in to edit notes for: ")
-        password = input("Enter password: ")
+        print(stringcolor.cs("You selected: Edit Notes", "yellow"))
+        user_id = colored_input("Log in to edit notes for: ")
+        password = colored_input("Enter password: ")
         if user_id in users and password == users[user_id]["password"]:
-            print("Logged in successfully.")
-            print_user_notes(user_id)
-            # Hier kannst du weitere Editierfunktionen einbauen
+            print(stringcolor.cs("Logged in successfully.", "green"))
+            edit_note_menu(user_id)
         else:
-            print("Incorrect user or password.")
+            print(stringcolor.cs("Incorrect user or password.", "red"))
             continue
     elif choice == "0":
-        print("Exiting the program. Goodbye!")
+        print(stringcolor.cs("Exiting the program. Goodbye!", "yellow"))
         break
     else:
-        print("Invalid option. Please try again.")
+        print(stringcolor.cs("Invalid option. Please try again.", "red"))
 
-print(users)
+print(stringcolor.cs(str(users), "cyan"))
