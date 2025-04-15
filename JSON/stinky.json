@@ -8,15 +8,11 @@
         "password": "123456"
     },
     "nico_id3": {
-        "fullname": "Nico Kuehn",
-        "password": "123456"
+        "fullname": "Mad Beats",
+        "password": "123456789"
     },
     "chris_id4": {
         "fullname": "Christoph Schneider",
-        "password": "123456"
-    },
-    "newuser_id": {
-        "fullname": "John Doe",
         "password": "123456"
     },
     "addy_id": {
