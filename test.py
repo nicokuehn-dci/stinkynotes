@@ -1,2 +1,4 @@
-from prompt_toolkit import prompt
+dic = {"id" : "text"}
 
+dic["id"] = "text1"
+print(dic)

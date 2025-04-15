@@ -50,13 +50,12 @@ def print_user_notes(user_id):
 def edit_note_per_id(note_id, user_id):
     with open(f"./JSON/{user_id}.json", "r") as file:
         data = json.load(file)
-        notes = data["notes"]
+    notes = data["notes"]
     original = notes[note_id]["note_content"]
     edited = prompt("Edit your note: ", default=original)
     print("Your new note: ", edited)
-
-    notes.update({note_id: edited})
-    data.update({user_id: notes})
+    notes[note_id]["note_content"] = edited
+    data["notes"] = notes
     with open(f"./JSON/{user_id}.json", "w") as file:
         json.dump(data, file, indent=4)
 
