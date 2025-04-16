@@ -56,9 +56,7 @@ def edit_user_notes(user_id):
        
     else:
         print("Invalid note number.")
-
-  
-    
+   
 def delete_user_note(user_id):
     with open(f"{filepath}{user_id}.json", "r") as file:
         data = json.load(file)
@@ -144,9 +142,7 @@ def is_password_correct(user_id, password):
     else: 
         print("Incorrect password.")
         return False
-
-
-    
+   
 def show_menu():
     print("\n--- Menu ---")
     print("1. Add/Edit User")
@@ -158,12 +154,11 @@ def show_menu():
     
     print("0. Exit")
 
-users = read_users(f'{filepath}stinky.json') #main dictionary with all users
+users = read_users(f'{filepath}stinky.json') # main dictionary with all users
 
 while True:
     show_menu()
     choice = input("\nEnter your choice: ")
-
     if choice == "1":
         print("You selected: Add/Edit User")
         user_id = input("Add user ID: ")
@@ -181,7 +176,6 @@ while True:
             "password": password
         }
         write_users(f'{filepath}stinky.json', users)
-        # create_user_json(user_id)
         print(f"User {user_id} added successfully.")
     elif choice == "2":
         print("You selected: Delete User")
@@ -232,8 +226,6 @@ while True:
         else:
             print("Incorrect password.")
             continue
-        
-            
 
     elif choice == "6":
         system("clear")
