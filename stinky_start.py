@@ -2,8 +2,57 @@ import os
 import datetime
 import json
 import random
-import stringcolor
+from stringcolor import cs
 from prompt_toolkit import prompt
+from os import system
+from datetime import datetime
+
+filepath = "./stinkies/"
+
+def list_all_public_notes(users):
+    notes = {}
+    for user_id in users.keys():
+
+        with open(f"{filepath}{user_id}.json", "r") as file:
+            data = json.load(file)
+        user_notes = data["notes"]
+        for key, value in user_notes.items():
+            if value["note_private"] == False:
+                timestamp_dt = datetime.strptime(key, "%Y%m%d%H%M%S")
+                formatted_date = timestamp_dt.strftime("%d.%m.%Y - %H:%M:%S")    
+                print(f"{formatted_date} Note: {cs(value['note_content'], 'blue')}")
+                notes[key] = value
+    input()
+
+def edit_user_notes(user_id):
+    with open(f"{filepath}{user_id}.json", "r") as file:
+        data = json.load(file)
+    notes = data["notes"]
+    
+    system("clear")
+    print(f"Which note from '{user_id}' would you like to edit?\n\n")
+
+    notes_list = list(notes.items())
+    for index, (key, value) in enumerate(notes_list, start=1):
+        timestamp_dt = datetime.strptime(key, "%Y%m%d%H%M%S")
+        formatted_date = timestamp_dt.strftime("%d.%m.%Y - %H:%M:%S")    
+        print(f"Note #{index}:\n--------\n{formatted_date}\n{value['note_content']}\n")
+
+    counter = int(input("\nEnter Note-# please: ")) - 1
+
+    if 0 <= counter < len(notes_list):
+        selected_key, selected_note = notes_list[counter]
+        #print(f"\nOld content: {selected_note['note_content']}")
+        #new_content = input("Enter new note content: ")
+        #data["notes"][selected_key]["note_content"] = new_content
+
+        edit_note_per_id(selected_key, user_id)
+        #print(f"Updated Note #{counter + 1}: {data['notes'][selected_key]['note_content']}")
+    else:
+        print("Invalid note number.")
+
+    #with open(f"./JSON/{user_id}.json", "w") as file:
+    #    json.dump(data, file, indent=4)
 
 def read_users(file_path):
     with open(file_path, 'r') as file:
@@ -19,12 +68,12 @@ def create_user_json(user_id):
             "user_id": user_id,
             "notes": {}
         }
-    with open(f"./JSON/{user_id}.json", "w") as file:
+    with open(f"{filepath}{user_id}.json", "w") as file:
         json.dump(data, file, indent=4)
 
 def delete_user_json(user_id):
     try:
-        os.remove(f"./JSON/{user_id}.json")
+        os.remove(f"{filepath}{user_id}.json")
         print(f"User {user_id}.json file deleted successfully.")
     except FileNotFoundError:
         print(f"User {user_id}.json file not found.")
@@ -33,14 +82,14 @@ def create_note_json(user_id, note_id, note_content, note_private):
         note_data = {
         "note_content": note_content,
         "note_private": note_private}
-        with open(f"./JSON/{user_id}.json", "r") as file:
+        with open(f"{filepath}{user_id}.json", "r") as file:
             data = json.load(file)
         data["notes"][note_id] = note_data
-        with open(f"./JSON/{user_id}.json", "w") as file:
+        with open(f"{filepath}{user_id}.json", "w") as file:
             json.dump(data, file, indent=4)
 
 def print_user_notes(user_id):
-    with open(f"./JSON/{user_id}.json", "r") as file:
+    with open(f"{filepath}{user_id}.json", "r") as file:
         data = json.load(file)
         notes = data["notes"]
     print(f"{user_id} has notes:")
@@ -48,7 +97,7 @@ def print_user_notes(user_id):
         print(f"Note ID: {note_id} Content: {note_data['note_content']}")
 
 def edit_note_per_id(note_id, user_id):
-    with open(f"./JSON/{user_id}.json", "r") as file:
+    with open(f"{filepath}{user_id}.json", "r") as file:
         data = json.load(file)
     notes = data["notes"]
     original = notes[note_id]["note_content"]
@@ -56,7 +105,7 @@ def edit_note_per_id(note_id, user_id):
     print("Your new note: ", edited)
     notes[note_id]["note_content"] = edited
     data["notes"] = notes
-    with open(f"./JSON/{user_id}.json", "w") as file:
+    with open(f"{filepath}{user_id}.json", "w") as file:
         json.dump(data, file, indent=4)
 
 def is_password_correct(user_id, password):
@@ -75,11 +124,11 @@ def show_menu():
     print("2. Delete User")
     print("3. Create Note") 
     print("4. Edit User Notes")
- #   print("5. Print All Public Notes") Create a list of all public notes from all users
+    print("5. Print All Public Notes")
     
     print("0. Exit")
 
-users = read_users('./JSON/stinky.json') #main dictionary with all users
+users = read_users(f'{filepath}stinky.json') #main dictionary with all users
 
 while True:
     show_menu()
@@ -96,12 +145,13 @@ while True:
         else:          
             fullname = input("Add Full Name: ")
             password = input("Add Password: ")
+            create_user_json(user_id)
         users[user_id] = {
             "fullname": fullname,
             "password": password
         }
-        write_users('./JSON/stinky.json', users)
-        create_user_json(user_id)
+        write_users(f'{filepath}stinky.json', users)
+        # create_user_json(user_id)
         print(f"User {user_id} added successfully.")
     elif choice == "2":
         print("You selected: Delete User")
@@ -109,7 +159,7 @@ while True:
         if user_id in users:
             delete_user_json(user_id)
             users.pop(user_id)
-            write_users('./JSON/stinky.json', users)
+            write_users(f'{filepath}stinky.json', users)
             print(f"User {user_id} deleted successfully.")
         else:
             print(f"User {user_id} not found.")
@@ -119,7 +169,7 @@ while True:
         password = input("Enter password: ")
         if password == users[user_id]["password"]:
             print("Logged in successfully.")
-            note_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            note_id = datetime.now().strftime("%Y%m%d%H%M%S")
             note_content = input("Enter note content: ")
             note_private = input("Is this note private? (yes/no): ").lower()
             if note_private == "yes" or note_private == "y":
@@ -138,11 +188,14 @@ while True:
         user_id = input("Log in to edit notes for: ")
         password = input("Enter password: ")
         if is_password_correct(user_id, password):
-            print_user_notes(user_id)
-            note_id = input("Enter Note ID: ")
-            edit_note_per_id(note_id, user_id)
+            edit_user_notes(user_id)
         else:
             continue
+
+    elif choice == "5":
+        system("clear")
+        print(f"A list of all public notes:\n")
+        list_all_public_notes(users)
 
     elif choice == "0":
         print("Exiting the program. Goodbye!")

@@ -1,0 +1,13 @@
+{
+    "user_id": "newuser_id",
+    "notes": {
+        "20250416135902": {
+            "note_content": "Text-Block",
+            "note_private": false
+        },
+        "20250416135912": {
+            "note_content": "Text-Tests",
+            "note_private": false
+        }
+    }
+}

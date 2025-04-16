@@ -1,0 +1,14 @@
+{
+    "user_id": "addy_id",
+    "notes": {
+        "20250416140039": {
+            "note_content": "Noch ein Textblock",
+            "note_private": true
+        },
+        "20250416140041": {
+            "note_content": "Noch ein weiterer Blödsinn",
+            "note_private": false
+        }
+
+    }
+}
