@@ -2,6 +2,16 @@
 
 StinkyNotes is a simple note-taking application that allows users to create, edit, and delete notes. Users can also mark notes as private or public.
 
+## Features
+
+- **User Management**: Add, edit, and delete users.
+- **Note Creation**: Create notes with unique IDs.
+- **Note Editing**: Edit existing notes, including their content and privacy settings.
+- **Note Deletion**: Delete notes as needed.
+- **Privacy Settings**: Mark notes as private or public.
+- **Data Persistence**: Notes and user data are stored in JSON files for persistence.
+- **Interactive Menu**: Navigate through the application using a user-friendly menu interface.
+
 ## Installation
 
 1. Clone the repository:
