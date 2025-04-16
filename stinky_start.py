@@ -3,6 +3,7 @@ import datetime
 import json
 import random
 import stringcolor
+from prompt_toolkit import prompt
 
 def read_users(file_path):
     with open(file_path, 'r') as file:
@@ -46,15 +47,35 @@ def print_user_notes(user_id):
     for note_id, note_data in notes.items():
         print(f"Note ID: {note_id} Content: {note_data['note_content']}")
 
-    
-    
+def edit_note_per_id(note_id, user_id):
+    with open(f"./JSON/{user_id}.json", "r") as file:
+        data = json.load(file)
+    notes = data["notes"]
+    original = notes[note_id]["note_content"]
+    edited = prompt("Edit your note: ", default=original)
+    print("Your new note: ", edited)
+    notes[note_id]["note_content"] = edited
+    data["notes"] = notes
+    with open(f"./JSON/{user_id}.json", "w") as file:
+        json.dump(data, file, indent=4)
+
+def is_password_correct(user_id, password):
+    if password == users[user_id]["password"]:
+            print("Logged in successfully.")  
+            return True
+    else: 
+        print("Incorrect password.")
+        return False
+
+
     
 def show_menu():
     print("\n--- Menu ---")
     print("1. Add/Edit User")
     print("2. Delete User")
     print("3. Create Note") 
-    print("4. Edit User Notes") # check if user has more notes. add a Note MENU
+    print("4. Edit User Notes")
+ #   print("5. Print All Public Notes") Create a list of all public notes from all users
     
     print("0. Exit")
 
@@ -68,9 +89,10 @@ while True:
         print("You selected: Add/Edit User")
         user_id = input("Add user ID: ")
         if user_id in users:
-            print(f"User {user_id} already exists. You can change Fullname and Password.")
-            fullname = input("Change Full Name: ")
-            password = input("Change Password: ")
+            password = input(f"User {user_id} already exists. Please enter your password:")
+            if is_password_correct(user_id, password):
+                fullname = input("Change Full Name: ")
+                password = input("Change Password: ")
         else:          
             fullname = input("Add Full Name: ")
             password = input("Add Password: ")
@@ -115,12 +137,11 @@ while True:
         print("You selected: Edit Notes")
         user_id = input("Log in to edit notes for: ")
         password = input("Enter password: ")
-        if password == users[user_id]["password"]:
-            print("Logged in successfully.")
+        if is_password_correct(user_id, password):
             print_user_notes(user_id)
-            #code
+            note_id = input("Enter Note ID: ")
+            edit_note_per_id(note_id, user_id)
         else:
-            print("Incorrect password.")
             continue
 
     elif choice == "0":
@@ -128,5 +149,3 @@ while True:
         break
     else:
         print("Invalid option. Please try again.")
-
-print(users)

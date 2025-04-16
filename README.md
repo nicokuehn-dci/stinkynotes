@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # StinkyNotes
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)
@@ -65,3 +66,6 @@ StinkyNotes is a simple note-taking application that allows users to create, edi
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+=======
+Created my own branch
+>>>>>>> ekaterinasbranch
