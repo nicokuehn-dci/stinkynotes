@@ -23,6 +23,15 @@ def list_all_public_notes(users):
                 print(f"{formatted_date} Note: {cs(value['note_content'], 'blue')}\n")
                 notes[key] = value
     input()
+    
+def delete_note_per_id(note_id, user_id):
+    with open(f"{filepath}{user_id}.json", "r") as file:
+        data = json.load(file)
+    notes = data["notes"]
+    del notes[note_id]
+    data["notes"] = notes
+    with open(f"{filepath}{user_id}.json", "w") as file:
+        json.dump(data, file, indent=4)
 
 def edit_user_notes(user_id):
     with open(f"{filepath}{user_id}.json", "r") as file:
@@ -42,17 +51,37 @@ def edit_user_notes(user_id):
 
     if 0 <= counter < len(notes_list):
         selected_key, selected_note = notes_list[counter]
-        #print(f"\nOld content: {selected_note['note_content']}")
-        #new_content = input("Enter new note content: ")
-        #data["notes"][selected_key]["note_content"] = new_content
 
         edit_note_per_id(selected_key, user_id)
-        #print(f"Updated Note #{counter + 1}: {data['notes'][selected_key]['note_content']}")
+       
     else:
         print("Invalid note number.")
 
-    #with open(f"./JSON/{user_id}.json", "w") as file:
-    #    json.dump(data, file, indent=4)
+  
+    
+def delete_user_note(user_id):
+    with open(f"{filepath}{user_id}.json", "r") as file:
+        data = json.load(file)
+    notes = data["notes"]
+    
+    system("clear")
+    print(f"Which note from '{user_id}' would you like to delete?\n\n")
+
+    notes_list = list(notes.items())
+    for index, (key, value) in enumerate(notes_list, start=1):
+        timestamp_dt = datetime.strptime(key, "%Y%m%d%H%M%S")
+        formatted_date = timestamp_dt.strftime("%d.%m.%Y - %H:%M:%S")    
+        print(f"Note #{index}:\n--------\n{formatted_date}\n{value['note_content']}\n")
+
+    counter = int(input("\nEnter Note-# please: ")) - 1
+
+    if 0 <= counter < len(notes_list):
+        selected_key, selected_note = notes_list[counter]
+       
+
+        delete_note_per_id(selected_key, user_id)
+    else:    
+        print("Invalid note number.")    
 
 def read_users(file_path):
     with open(file_path, 'r') as file:
@@ -124,7 +153,8 @@ def show_menu():
     print("2. Delete User")
     print("3. Create Note") 
     print("4. Edit User Notes")
-    print("5. Print All Public Notes")
+    print("5. Delete Note")
+    print("6. Print All Public Notes")
     
     print("0. Exit")
 
@@ -191,8 +221,21 @@ while True:
             edit_user_notes(user_id)
         else:
             continue
-
+        
     elif choice == "5":
+        print("Delete a Note")
+        user_id = input("Log in to delete a note for: ")
+        password = input("Enter password: ")
+        if is_password_correct(user_id, password):
+            delete_user_note(user_id)
+            print(f"Note deleted successfully.")
+        else:
+            print("Incorrect password.")
+            continue
+        
+            
+
+    elif choice == "6":
         system("clear")
         print(f"A list of all public notes:\n")
         list_all_public_notes(users)
