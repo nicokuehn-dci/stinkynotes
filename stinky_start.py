@@ -293,8 +293,8 @@ def edit_note_menu(user_id):
     while True:
         user_data = load_user_data(user_id)
         if user_data is None:
-             print(stringcolor.cs(f"Error loading notes for {user_id}. Cannot edit.", "red"))
-             return # Exit editing if user data fails to load
+            print(stringcolor.cs(f"Error loading notes for {user_id}. Cannot edit.", "red"))
+            return # Exit editing if user data fails to load
 
         notes = user_data.get("notes", {})
         if not notes:
@@ -308,10 +308,11 @@ def edit_note_menu(user_id):
             content_preview = notes[note_id].get('note_content', '')[:40] # Show preview
             if len(notes[note_id].get('note_content', '')) > 40:
                 content_preview += "..."
-            options.append(f"{note_id}: {content_preview}")
+            privacy = "(Private)" if notes[note_id].get('note_private', False) else "(Public)"
+            options.append(f"{note_id}: {content_preview} {privacy}")
         options.append("Back")
 
-        idx = cursor_menu(options, title=stringcolor.cs(f"--- Select Note to Edit for {user_id} ---", "yellow").bold())
+        idx = cursor_menu(options, title=f"--- Edit Notes for {user_id} ---")
 
         if idx == len(options) - 1:
             # "Back" selected
@@ -327,7 +328,7 @@ def edit_note_menu(user_id):
         if not new_content: # If user just presses Enter
             new_content = current_content # Keep old content
         else:
-             print(stringcolor.cs("Content updated.", "light_green"))
+            print(stringcolor.cs("Content updated.", "light_green"))
 
         # Edit Privacy
         while True:
@@ -339,12 +340,11 @@ def edit_note_menu(user_id):
                 print(stringcolor.cs(f"Privacy changed to {new_privacy_str}.", "light_green"))
                 break
             elif change_privacy in ('n', 'no', ''):
-                 new_privacy = current_privacy # Keep old privacy
-                 print(stringcolor.cs("Privacy unchanged.", "yellow"))
-                 break
+                new_privacy = current_privacy # Keep old privacy
+                print(stringcolor.cs("Privacy unchanged.", "yellow"))
+                break
             else:
-                 print(stringcolor.cs("Invalid input. Please enter 'yes' or 'no'.", "red"))
-
+                print(stringcolor.cs("Invalid input. Please enter 'yes' or 'no'.", "red"))
 
         # Save changes
         # Update the note in the loaded data

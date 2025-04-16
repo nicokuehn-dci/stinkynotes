@@ -18,5 +18,9 @@
     "addy_id": {
         "fullname": "Addy Spaghetti",
         "password": "21353274"
+    },
+    "raffi_id": {
+        "fullname": "Rafael Han",
+        "password": "1234567"
     }
 }
