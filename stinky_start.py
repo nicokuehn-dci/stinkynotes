@@ -12,7 +12,7 @@ filepath = "./stinkies/"
 def list_all_public_notes(users):
     notes = {}
     for user_id in users.keys():
-
+        print(cs(f"{user_id}: ", "orange"))
         with open(f"{filepath}{user_id}.json", "r") as file:
             data = json.load(file)
         user_notes = data["notes"]
@@ -20,7 +20,7 @@ def list_all_public_notes(users):
             if value["note_private"] == False:
                 timestamp_dt = datetime.strptime(key, "%Y%m%d%H%M%S")
                 formatted_date = timestamp_dt.strftime("%d.%m.%Y - %H:%M:%S")    
-                print(f"{formatted_date} Note: {cs(value['note_content'], 'blue')}")
+                print(f"{formatted_date} Note: {cs(value['note_content'], 'blue')}\n")
                 notes[key] = value
     input()
 

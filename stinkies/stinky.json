@@ -6,5 +6,9 @@
     "addy_id": {
         "fullname": "Eddie Spagh Eddy",
         "password": "123456"
+    },
+    "newest_user": {
+        "fullname": "Another User",
+        "password": "123456"
     }
 }
