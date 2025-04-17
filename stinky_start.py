@@ -19,6 +19,11 @@ with open("config.json", "r") as config_file:
     config = json.load(config_file)
 JSON_DIR = config["JSON_DIR"]
 
+# Ensure the JSON directory exists
+if not os.path.exists(JSON_DIR):
+    os.makedirs(JSON_DIR)
+    print(f"Created missing JSON directory: {JSON_DIR}")
+
 # Ensure virtual environment is created and activated
 VENV_DIR = "venv"
 if not os.path.exists(VENV_DIR):
@@ -332,6 +337,7 @@ fernet = Fernet(ENCRYPTION_KEY)
 
 # Print the generated key for reference (optional, remove in production)
 print(f"Generated Encryption Key: {ENCRYPTION_KEY.decode()}")
+print("Keep the encryption key secure for decrypting notes.")
 
 # Updated encryption and decryption functions
 def encrypt_note_content(content):
