@@ -3,7 +3,7 @@
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)
 
 
-StinkyNotes is a simple yet powerful note-taking application that enables users to create, edit, and manage notes efficiently. With support for privacy settings and user management, StinkyNotes is ideal for both personal and collaborative use.
+StinkyNotes is a simple yet powerful note-taking application that enables users to create, edit, and manage notes efficiently. With support for privacy settings and user management, StinkyNotes is ideal for both personal and collaborative use. This application is designed for Ubuntu/Linux.
 📚 Table of Contents
 
     ✨ Features
