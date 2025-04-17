@@ -32,9 +32,17 @@ if not os.path.exists(VENV_DIR):
 
 # Activate the virtual environment
 activate_script = os.path.join(VENV_DIR, "bin", "activate")
+if platform.system() == "Windows":
+    activate_script = os.path.join(VENV_DIR, "Scripts", "activate.bat")
+elif platform.system() == "Linux" or platform.system() == "Darwin":
+    activate_script = os.path.join(VENV_DIR, "bin", "activate")
+
 if os.path.exists(activate_script):
     try:
-        subprocess.check_call(["bash", "-c", f"source {activate_script} && echo 'Virtual environment activated.'"])
+        if platform.system() == "Windows":
+            subprocess.check_call([activate_script], shell=True)
+        else:
+            subprocess.check_call(["bash", "-c", f"source {activate_script} && echo 'Virtual environment activated.'"])
     except Exception as e:
         print(f"Error activating virtual environment: {e}")
         sys.exit(1)
