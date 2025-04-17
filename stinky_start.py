@@ -151,8 +151,33 @@ def show_menu():
     print("4. Edit User Notes")
     print("5. Delete Note")
     print("6. Print All Public Notes")
-    
+    print("7. ProUser Area")
     print("0. Exit")
+
+def pro_user_area():
+    print("\n--- ProUser Area ---")
+    print("1. Advanced Note Management")
+    print("2. Premium Support")
+    print("3. Customizable Themes")
+    print("4. Cloud Sync")
+    print("0. Back to Main Menu")
+    choice = input("\nEnter your choice: ")
+    if choice == "1":
+        print("Advanced Note Management selected.")
+        # Implement advanced note management features here
+    elif choice == "2":
+        print("Premium Support selected.")
+        # Implement premium support features here
+    elif choice == "3":
+        print("Customizable Themes selected.")
+        # Implement customizable themes features here
+    elif choice == "4":
+        print("Cloud Sync selected.")
+        # Implement cloud sync features here
+    elif choice == "0":
+        return
+    else:
+        print("Invalid option. Please try again.")
 
 users = read_users(f'{filepath}stinky.json') # main dictionary with all users
 
@@ -231,6 +256,9 @@ while True:
         system("clear")
         print(f"A list of all public notes:\n")
         list_all_public_notes(users)
+
+    elif choice == "7":
+        pro_user_area()
 
     elif choice == "0":
         print("Exiting the program. Goodbye!")

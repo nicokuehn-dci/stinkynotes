@@ -18,6 +18,8 @@ StinkyNotes is a simple yet powerful note-taking application that enables users 
 
     📄 License
 
+    💼 ProUser Features
+
 ✨ Features
 
     👥 User Management: Add, edit, and delete users.
@@ -90,3 +92,12 @@ Push to your branch:
 
 This project is licensed under the MIT License.
 
+💼 ProUser Features
+
+    💼 Advanced Note Management: ProUsers can access advanced note management features, including bulk note operations and enhanced privacy controls.
+
+    💼 Premium Support: ProUsers receive priority support and access to exclusive resources.
+
+    💼 Customizable Themes: ProUsers can customize the application's appearance with a variety of themes.
+
+    💼 Cloud Sync: ProUsers can sync their notes across multiple devices using cloud storage.
