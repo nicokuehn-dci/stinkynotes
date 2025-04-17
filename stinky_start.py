@@ -10,9 +10,7 @@ import stringcolor
 import curses # Keep this import even if windows-curses might be used
 
 # Create a requirements.txt file with the necessary dependencies
-REQUIREMENTS = """stringcolor
-windows-curses; platform_system == 'Windows'
-"""
+REQUIREMENTS = """stringcolor"""
 
 # --- Environment Setup (Optional at Runtime) ---
 def check_and_install_dependencies():
@@ -241,24 +239,49 @@ def save_user_data(user_id, data):
         print(stringcolor.cs(f"Error writing user file {user_file}: {e}", "red"))
         return False
 
+# ProUser Features
+PRO_USER_FEATURES = {
+    "encryption": True,  # Advanced note encryption
+    "cloud_sync": True,  # Cloud synchronization (mocked for now)
+    "priority_support": True,  # Priority customer support
+    "custom_themes": True,  # Customizable themes (mocked for now)
+    "unlimited_storage": True  # Unlimited storage for notes
+}
+
+def is_pro_user(user_id):
+    """Check if a user is a ProUser."""
+    users = read_users(USERS_FILE)
+    return users.get(user_id, {}).get("pro_user", False)
+
+def encrypt_note_content(content):
+    """Encrypt note content for ProUsers."""
+    # Simple mock encryption (replace with real encryption logic)
+    return f"ENCRYPTED({content})"
+
+def decrypt_note_content(content):
+    """Decrypt note content for ProUsers."""
+    # Simple mock decryption (replace with real decryption logic)
+    if content.startswith("ENCRYPTED(") and content.endswith(")"):
+        return content[len("ENCRYPTED("):-1]
+    return content
+
 def create_note_entry(user_id, note_id, note_content, note_private):
     """Adds a note entry to a user's data file."""
     data = load_user_data(user_id)
     if data is None:
         print(stringcolor.cs(f"Cannot create note. User data for {user_id} not found or couldn't be loaded.", "red"))
-        # Option: Try creating the user file here if it was missing
-        # create_user_json(user_id)
-        # data = load_user_data(user_id) # Try loading again
-        # if data is None: return # Give up if still fails
-        return # Current behavior: don't create note if user file missing/corrupt
+        return
+
+    if is_pro_user(user_id) and PRO_USER_FEATURES["encryption"]:
+        note_content = encrypt_note_content(note_content)
 
     note_data = {
         "note_content": note_content,
         "note_private": note_private,
-        "created_at": datetime.datetime.now().isoformat(), # Add timestamp
+        "created_at": datetime.datetime.now().isoformat(),
         "updated_at": datetime.datetime.now().isoformat()
     }
-    if "notes" not in data: # Ensure 'notes' key exists
+    if "notes" not in data:
         data["notes"] = {}
 
     data["notes"][note_id] = note_data
@@ -267,13 +290,28 @@ def create_note_entry(user_id, note_id, note_content, note_private):
     else:
         print(stringcolor.cs(f"Failed to save note '{note_id}' for user {user_id}.", "red"))
 
-
 def get_user_notes(user_id):
     """Gets the notes dictionary for a user."""
     data = load_user_data(user_id)
     if data and "notes" in data:
-        return data["notes"]
-    return {} # Return empty dict if no data or no 'notes' key
+        notes = data["notes"]
+        if is_pro_user(user_id) and PRO_USER_FEATURES["encryption"]:
+            for note_id, note_data in notes.items():
+                note_data["note_content"] = decrypt_note_content(note_data["note_content"])
+        return notes
+    return {}
+
+def toggle_pro_user_status(user_id):
+    """Toggle the ProUser status for a user."""
+    users = read_users(USERS_FILE)
+    if user_id in users:
+        current_status = users[user_id].get("pro_user", False)
+        users[user_id]["pro_user"] = not current_status
+        write_users(USERS_FILE, users)
+        status = "enabled" if not current_status else "disabled"
+        print(stringcolor.cs(f"ProUser status {status} for user '{user_id}'.", "green"))
+    else:
+        print(stringcolor.cs(f"User '{user_id}' not found.", "red"))
 
 def print_user_notes(user_id): # Keep for potential debugging or direct display
     """Prints all notes for a given user."""
@@ -509,6 +547,7 @@ def main():
         "Delete User",
         "Create Note",
         "Edit User Notes",
+        "Toggle ProUser Status",
         "Exit"
     ]
 
@@ -634,6 +673,10 @@ def main():
             else:
                 print(stringcolor.cs("Incorrect password.", "red"))
                 # No 'continue' needed, will loop back to main menu naturally
+
+        elif selected_option == "Toggle ProUser Status":
+            user_id = colored_input("Enter User ID to toggle ProUser status: ", "green")
+            toggle_pro_user_status(user_id)
 
         elif selected_option == "Exit":
             print(stringcolor.cs("Exiting the program. Goodbye!", "yellow"))

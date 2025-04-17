@@ -9,6 +9,16 @@ StinkyNotes is a note-taking application that allows users to add, edit, and del
 - Menu-driven interface using the `curses` library
 - ProUser Version (Premium) with comfortable menus and pay features
 
+## ProUser Features
+
+The ProUser Version (Premium) includes the following extra features:
+
+- Advanced note encryption for private notes
+- Cloud synchronization for accessing notes across devices
+- Priority customer support
+- Customizable themes for the user interface
+- Unlimited storage for notes
+
 ## Installation
 
 1. Clone the repository:
