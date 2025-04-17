@@ -1,3 +1,11 @@
+# For colored terminal output
+stringcolor
+
+# For encryption and decryption of notes
 cryptography
+
+# For potential SMS notifications (future feature)
 twilio
-string-color
+
+# Provides curses support on Windows (built-in on Linux/macOS)
+windows-curses>=2.3.1 ; platform_system == 'Windows'

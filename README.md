@@ -1,61 +1,49 @@
-# StinkyNotes - Nico Branch
+# StinkyNotes
 
-StinkyNotes is a feature-rich note-taking application designed for both regular and Pro users. This branch introduces advanced features, intelligent error handling, and a robust ProUser area.
+## Overview
+StinkyNotes is a Python-based note management application that allows users to create, edit, and manage notes. It supports both regular users and ProUsers with advanced features like encrypted notes.
 
 ## Features
-
-### General Features
-- **Add/Edit User**: Create or modify user profiles.
-- **Delete User**: Remove user profiles and their associated data.
-- **Create Note**: Add new notes to your account.
-- **Edit User Notes**: Modify existing notes.
-- **Exit**: Safely exit the application.
-
-### ProUser Area Features
-ProUsers have access to advanced features, including:
-- **Create Encrypted Note**: Add notes with advanced encryption for enhanced security.
-- **View Encrypted Notes**: View all encrypted notes.
-- **Edit Encrypted Note**: Modify the content of encrypted notes.
-- **Delete Encrypted Note**: Remove encrypted notes from your account.
-- **Decrypt and View Note**: Decrypt and view the content of encrypted notes.
-
-### Intelligent Error Handling
-The application includes a self-healing mechanism to handle errors and ensure smooth operation:
-- **Dependency Management**: Automatically checks and installs missing dependencies.
-- **Virtual Environment Setup**: Ensures a virtual environment is created and activated before running the application.
-- **Error Logging**: Logs all errors to `stinkynotes.log` for debugging.
-- **Self-Repair**: Reads the log file on exit, attempts to fix errors, and removes fixed entries from the log.
-- **Common Error Fixes**:
-  - Recreates missing files.
-  - Resets corrupted JSON files.
-  - Skips invalid encrypted notes.
+- Add, edit, and delete user accounts.
+- Create and manage notes.
+- ProUser features:
+  - Encrypted notes for added security.
+  - Priority support.
+  - Unlimited storage for notes.
+- JSON-based storage for user data and notes.
 
 ## How to Run
-1. Clone the repository and navigate to the project directory.
-2. Run the application:
+1. Ensure you have Python 3 installed on your system.
+2. Clone or download the repository.
+3. Navigate to the project directory.
+4. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+5. Run the application:
    ```bash
    python3 stinky_start.py
    ```
-3. Follow the on-screen instructions to set up dependencies and start using the application.
 
-## Requirements
-- Python 3.12 or higher
-- Required Python packages (automatically installed):
-  - `stringcolor`
-  - `cryptography`
-  - `twilio`
-  - `string-color`
+## JSON Storage Structure
+- All user data and notes are stored in the `JSON` directory.
+- Each user has a separate JSON file named `<user_id>.json`.
+- The main user database is stored in `stinky.json`.
 
-## File Structure
-- `stinky_start.py`: Main application script.
-- `requirements.txt`: Lists required Python packages.
-- `stinkynotes.log`: Log file for error tracking and debugging.
-- `JSON/`: Directory containing user data files.
+## Multi-line Input Instructions
+When entering multi-line input (e.g., note content):
+- On Linux/macOS: Press `Ctrl+D` on an empty line to finish.
+- On Windows: Press `Ctrl+Z` then `Enter` on an empty line to finish.
+
+## Dependencies
+- `stringcolor`: For colored terminal output.
+- `cryptography`: For encryption and decryption of notes.
+- `twilio`: For potential SMS notifications (future feature).
+- `windows-curses`: Provides curses support on Windows (built-in on Linux/macOS).
 
 ## Notes
-- Ensure Python is installed on your system.
-- For ProUser features, you must log in with a ProUser account.
-- The application automatically handles most errors and maintains a clean log file.
+- Ensure the `JSON` directory exists in the project root.
+- The application generates an encryption key on each run. Keep it secure for decrypting notes.
 
 ## License
-This project is licensed under the terms of the LICENSE file included in the repository.
+This project is licensed under the MIT License. See the LICENSE file for details.

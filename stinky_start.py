@@ -8,10 +8,16 @@ import datetime
 import json
 import stringcolor
 import curses # Keep this import even if windows-curses might be used
-from cryptography.fernet import Fernet
-from cryptography.fernet import InvalidToken
+from cryptography.fernet import Fernet, InvalidToken
+import binascii
 import time  # Added for tracking failed login attempts
 import logging
+from passlib.hash import pbkdf2_sha256
+
+# Load configuration from config.json
+with open("config.json", "r") as config_file:
+    config = json.load(config_file)
+JSON_DIR = config["JSON_DIR"]
 
 # Ensure virtual environment is created and activated
 VENV_DIR = "venv"
@@ -111,14 +117,22 @@ def check_and_install_dependencies():
                     print(f"Installing missing dependency: {package_spec}")
                     try:
                         # Use the full spec (e.g., package==1.0) for installation
-                        subprocess.check_call([sys.executable, "-m", "pip", "install", package_spec])
+                        subprocess.check_call([sys.executable, "-m", "pip", "install", package_spec],
+                                              stdout=subprocess.DEVNULL, stderr=subprocess.PIPE) # Capture stderr
+                        print(f"Successfully installed {package_spec}.")
                         installed_changes = True
                     except subprocess.CalledProcessError as e:
-                        print(f"Error installing {package_spec}: {e}")
-                        print("Please try installing it manually.")
-                        sys.exit(1) # Exit if critical dependency fails
+                        # If it failed, print the command and the error output from pip
+                        print(f"Error installing {package_spec}. Pip command failed.")
+                        # e.stderr contains the captured error output (needs decoding)
+                        if e.stderr:
+                            print("--- Pip Error Output ---")
+                            print(e.stderr.decode(errors='ignore')) # Decode bytes to string
+                            print("------------------------")
+                        print(f"Please try installing it manually: pip install \"{package_spec}\"")
+                        sys.exit(1)
                     except Exception as e:
-                         print(f"An unexpected error occurred during installation: {e}")
+                         print(f"An unexpected error occurred during installation of {package_spec}: {e}")
                          sys.exit(1)
 
         if installed_changes:
@@ -216,7 +230,6 @@ except ImportError as e:
 # =========================
 
 # Use a constant for the JSON directory
-JSON_DIR = "./JSON"
 USERS_FILE = os.path.join(JSON_DIR, "stinky.json")
 
 def get_user_file_path(user_id):
@@ -317,13 +330,14 @@ def encrypt_note_content(content):
     """Encrypt note content for ProUsers."""
     return fernet.encrypt(content.encode()).decode()
 
+# Update decryption function to handle invalid base64 strings
 def decrypt_note_content(content):
     """Decrypt note content for ProUsers."""
     try:
         return fernet.decrypt(content.encode()).decode()
-    except InvalidToken:
-        log_error(f"InvalidToken error while decrypting content: {content}")
-        return "[Decryption Failed: Invalid Token]"
+    except (InvalidToken, binascii.Error):
+        log_error(f"Decryption failed for content: {content}")
+        return "[Decryption Failed: Invalid Content]"
     except Exception as e:
         log_exception(e)
         return "[Decryption Failed: Unknown Error]"
@@ -495,10 +509,12 @@ def pro_user_menu(user_id):
 
         if choice_idx == 0:  # Create Encrypted Note
             note_id = str(uuid.uuid4())
-            note_content = colored_input("Enter note content: ", "blue")
+            multi_line_instructions = "Enter note content. Press Ctrl+D (Linux/macOS) or Ctrl+Z then Enter (Windows) on an empty line to finish."
+            print(stringcolor.cs(multi_line_instructions, "yellow"))
+            note_content = colored_input("", "blue")
             while not note_content:
                 print(stringcolor.cs("Note content cannot be empty.", "red"))
-                note_content = colored_input("Enter note content: ", "blue")
+                note_content = colored_input("", "blue")
 
             note_private = True  # All ProUser notes are private by default
             create_note_entry(user_id, note_id, note_content, note_private)
@@ -711,6 +727,14 @@ def cursor_menu(options, title="--- Menu ---"):
 # Main Application Logic
 # =========================
 
+def hash_password(password):
+    """Hash a password for storing."""
+    return pbkdf2_sha256.hash(password)
+
+def verify_password(stored_password, provided_password):
+    """Verify a stored password against one provided by the user."""
+    return pbkdf2_sha256.verify(provided_password, stored_password)
+
 def check_password(user_id, input_password):
     """Check the password for a user and handle failed attempts."""
     global failed_attempts
@@ -734,7 +758,7 @@ def check_password(user_id, input_password):
     # Check the password
     users = read_users(USERS_FILE)
     correct_password = users.get(user_id, {}).get("password")
-    if input_password == correct_password:
+    if verify_password(correct_password, input_password):
         # Reset failed attempts on successful login
         failed_attempts[user_id]["count"] = 0
         return True
@@ -865,7 +889,8 @@ def main():
             "Add/Edit User",
             "Delete User",
             "Create Note",
-            "Edit User Notes",
+            "View User Notes",  # New menu item for viewing notes
+            "Edit User Notes",  # Existing menu item for editing notes
             "ProUser Area",
             "Exit"
         ]
@@ -885,10 +910,15 @@ def main():
         elif selected_option == 2:  # Create Note
             print("Create Note functionality not implemented yet.")
 
-        elif selected_option == 3:  # Edit User Notes
-            print("Edit User Notes functionality not implemented yet.")
+        elif selected_option == 3:  # View User Notes
+            user_id = colored_input("Enter User ID to view notes: ", "green")
+            print_user_notes(user_id)  # Use the existing function to display notes
 
-        elif selected_option == 4:  # ProUser Area
+        elif selected_option == 4:  # Edit User Notes
+            user_id = colored_input("Enter User ID to edit notes: ", "green")
+            edit_note_menu(user_id)  # Use the existing function to edit notes
+
+        elif selected_option == 5:  # ProUser Area
             user_id = colored_input("Enter ProUser ID: ", "green")
             if login_user(user_id):
                 pro_user_menu(user_id)
@@ -912,4 +942,8 @@ if __name__ == "__main__":
             print(stringcolor.cs("Please check the log file for more details.", "yellow"))
     finally:
         process_log_and_self_repair()
+
+# Ensure the main function is defined
+if __name__ == "__main__":
+    main()
 
