@@ -181,10 +181,15 @@ while True:
         print("You selected: Delete User")
         user_id = input("Enter user ID to delete: ")
         if user_id in users:
-            delete_user_json(user_id)
-            users.pop(user_id)
-            write_users(f'{filepath}stinky.json', users)
-            print(f"User {user_id} deleted successfully.")
+            password = input(f"Please enter your password:")
+            if is_password_correct(user_id, password):
+                delete_user_json(user_id)
+                users.pop(user_id)
+                write_users(f'{filepath}stinky.json', users)
+                print(f"User {user_id} deleted successfully.")
+            else:
+                print("Incorrect password.")
+                continue
         else:
             print(f"User {user_id} not found.")
     elif choice == "3":
