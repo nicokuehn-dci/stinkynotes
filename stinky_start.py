@@ -108,9 +108,7 @@ def edit_user_notes(user_id):
 
     if 0 <= counter < len(notes_list):
         selected_key, selected_note = notes_list[counter]
-
         edit_note_per_id(selected_key, user_id)
-       
     else:
         print("Invalid note number.")
 
@@ -133,9 +131,8 @@ def delete_user_note(user_id):
 
     if 0 <= counter < len(notes_list):
         selected_key, selected_note = notes_list[counter]
-       
-
         delete_note_per_id(selected_key, user_id)
+        print(f"Note deleted successfully.")
     else:    
         print("Invalid note number.")    
 
@@ -272,13 +269,17 @@ while True:
     elif choice == "5": # Delete Note
         print("Delete a Note")
         user_id = input("Log in to delete a note for: ")
-        password = input("Enter password: ")
-        if is_password_correct(user_id, password):
-            delete_user_note(user_id)
-            print(f"Note deleted successfully.")
-        else:
-            print("Incorrect password.")
+        if user_id not in users:
+            print(f"User {user_id} not found.")
+            input()
             continue
+        else:
+            password = input("Enter password: ")
+            if is_password_correct(user_id, password):
+                delete_user_note(user_id)
+            else:
+                print("Incorrect password.")
+                continue
 
     elif choice == "6": # Print All Public Notes
         system("clear")
