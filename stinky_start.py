@@ -9,22 +9,78 @@ from datetime import datetime
 
 filepath = "./stinkies/"
 
-def list_all_public_notes(users):
-    notes = {}
-    for user_id in users.keys():
-        print(cs(f"{user_id}: ", "orange"))
-        with open(f"{filepath}{user_id}.json", "r") as file:
-            data = json.load(file)
-        user_notes = data["notes"]
-        for key, value in user_notes.items():
-            if value["note_private"] == False:
-                timestamp_dt = datetime.strptime(key, "%Y%m%d%H%M%S")
-                formatted_date = timestamp_dt.strftime("%d.%m.%Y - %H:%M:%S")    
-                print(f"{formatted_date} Note: {cs(value['note_content'], 'blue')}\n")
-                notes[key] = value
-    input()
-    
+def read_users(file_path):
+    """Reads the user data from the main JSON file.(stinky.json)"""
+    with open(file_path, 'r') as file:
+        users = json.load(file)
+    return users
+
+def write_users(file_path, users):
+    """Writes the user data to the main JSON file.(stinky.json)"""
+    with open(file_path, 'w') as file:
+        json.dump(users, file, indent=4)
+
+def create_user_json(user_id):
+    """Creates a JSON file for the user with an empty notes dictionary. Uses the user_id as the filename."""
+    data = {
+            "user_id": user_id,
+            "notes": {}
+        }
+    with open(f"{filepath}{user_id}.json", "w") as file:
+        json.dump(data, file, indent=4)
+
+def delete_user_json(user_id):
+    """Deletes the user's JSON file."""
+    try:
+        os.remove(f"{filepath}{user_id}.json")
+        print(f"User {user_id}.json file deleted successfully.")
+    except FileNotFoundError:
+        print(f"User {user_id}.json file not found.")
+
+def is_password_correct(user_id, password):
+    """Checks if the provided password matches the stored password for the user."""
+    if password == users[user_id]["password"]:
+            print("Logged in successfully.")  
+            return True
+    else: 
+        print("Incorrect password.")
+        return False
+
+def print_user_notes(user_id):
+    """Prints all notes for the given user ID."""
+    with open(f"{filepath}{user_id}.json", "r") as file:
+        data = json.load(file)
+        notes = data["notes"]
+    print(f"{user_id} has notes:")
+    for note_id, note_data in notes.items():
+        print(f"Note ID: {note_id} Content: {note_data['note_content']}")
+
+def create_note_json(user_id, note_id, note_content, note_private):
+    """Creates a note for the user with the given ID and stores it in the user's JSON file."""
+    note_data = {
+    "note_content": note_content,
+    "note_private": note_private}
+    with open(f"{filepath}{user_id}.json", "r") as file:
+        data = json.load(file)
+    data["notes"][note_id] = note_data
+    with open(f"{filepath}{user_id}.json", "w") as file:
+        json.dump(data, file, indent=4)
+
+def edit_note_per_id(note_id, user_id):
+    """Edits the content of a note for the user with the given ID."""
+    with open(f"{filepath}{user_id}.json", "r") as file:
+        data = json.load(file)
+    notes = data["notes"]
+    original = notes[note_id]["note_content"]
+    edited = prompt("Edit your note: ", default=original)
+    print("Your new note: ", edited)
+    notes[note_id]["note_content"] = edited
+    data["notes"] = notes
+    with open(f"{filepath}{user_id}.json", "w") as file:
+        json.dump(data, file, indent=4)
+
 def delete_note_per_id(note_id, user_id):
+    """Deletes a note for the user with the given ID."""
     with open(f"{filepath}{user_id}.json", "r") as file:
         data = json.load(file)
     notes = data["notes"]
@@ -34,6 +90,7 @@ def delete_note_per_id(note_id, user_id):
         json.dump(data, file, indent=4)
 
 def edit_user_notes(user_id):
+    """Allows the user to edit their notes."""
     with open(f"{filepath}{user_id}.json", "r") as file:
         data = json.load(file)
     notes = data["notes"]
@@ -56,8 +113,9 @@ def edit_user_notes(user_id):
        
     else:
         print("Invalid note number.")
-   
+
 def delete_user_note(user_id):
+    """Allows the user to delete their notes."""
     with open(f"{filepath}{user_id}.json", "r") as file:
         data = json.load(file)
     notes = data["notes"]
@@ -81,69 +139,24 @@ def delete_user_note(user_id):
     else:    
         print("Invalid note number.")    
 
-def read_users(file_path):
-    with open(file_path, 'r') as file:
-        users = json.load(file)
-    return users
-
-def write_users(file_path, users):
-    with open(file_path, 'w') as file:
-        json.dump(users, file, indent=4)
-
-def create_user_json(user_id):
-    data = {
-            "user_id": user_id,
-            "notes": {}
-        }
-    with open(f"{filepath}{user_id}.json", "w") as file:
-        json.dump(data, file, indent=4)
-
-def delete_user_json(user_id):
-    try:
-        os.remove(f"{filepath}{user_id}.json")
-        print(f"User {user_id}.json file deleted successfully.")
-    except FileNotFoundError:
-        print(f"User {user_id}.json file not found.")
-
-def create_note_json(user_id, note_id, note_content, note_private):
-        note_data = {
-        "note_content": note_content,
-        "note_private": note_private}
+def list_all_public_notes(users):
+    """Lists all public notes from all users."""
+    notes = {}
+    for user_id in users.keys():
+        print(cs(f"{user_id}: ", "orange"))
         with open(f"{filepath}{user_id}.json", "r") as file:
             data = json.load(file)
-        data["notes"][note_id] = note_data
-        with open(f"{filepath}{user_id}.json", "w") as file:
-            json.dump(data, file, indent=4)
-
-def print_user_notes(user_id):
-    with open(f"{filepath}{user_id}.json", "r") as file:
-        data = json.load(file)
-        notes = data["notes"]
-    print(f"{user_id} has notes:")
-    for note_id, note_data in notes.items():
-        print(f"Note ID: {note_id} Content: {note_data['note_content']}")
-
-def edit_note_per_id(note_id, user_id):
-    with open(f"{filepath}{user_id}.json", "r") as file:
-        data = json.load(file)
-    notes = data["notes"]
-    original = notes[note_id]["note_content"]
-    edited = prompt("Edit your note: ", default=original)
-    print("Your new note: ", edited)
-    notes[note_id]["note_content"] = edited
-    data["notes"] = notes
-    with open(f"{filepath}{user_id}.json", "w") as file:
-        json.dump(data, file, indent=4)
-
-def is_password_correct(user_id, password):
-    if password == users[user_id]["password"]:
-            print("Logged in successfully.")  
-            return True
-    else: 
-        print("Incorrect password.")
-        return False
-   
+        user_notes = data["notes"]
+        for key, value in user_notes.items():
+            if value["note_private"] == False:
+                timestamp_dt = datetime.strptime(key, "%Y%m%d%H%M%S")
+                formatted_date = timestamp_dt.strftime("%d.%m.%Y - %H:%M:%S")    
+                print(f"{formatted_date} Note: {cs(value['note_content'], 'blue')}\n")
+                notes[key] = value
+    input()
+    
 def show_menu():
+    """Displays the main menu."""
     print("\n--- Menu ---")
     print("1. Add/Edit User")
     print("2. Delete User")
@@ -155,36 +168,38 @@ def show_menu():
     print("0. Exit")
 
 def pro_user_area():
-    print("\n--- ProUser Area ---")
-    print("1. Advanced Note Management")
-    print("2. Premium Support")
-    print("3. Customizable Themes")
-    print("4. Cloud Sync")
-    print("0. Back to Main Menu")
-    choice = input("\nEnter your choice: ")
-    if choice == "1":
-        print("Advanced Note Management selected.")
-        # Implement advanced note management features here
-    elif choice == "2":
-        print("Premium Support selected.")
-        # Implement premium support features here
-    elif choice == "3":
-        print("Customizable Themes selected.")
-        # Implement customizable themes features here
-    elif choice == "4":
-        print("Cloud Sync selected.")
-        # Implement cloud sync features here
-    elif choice == "0":
-        return
-    else:
-        print("Invalid option. Please try again.")
+    """ProUser Area Menu Comming Soon ..."""
+    print("\n--- ProUser Area ---\n Showing later by Nico")
+    input()
+    # print("1. Advanced Note Management")
+    # print("2. Premium Support")
+    # print("3. Customizable Themes")
+    # print("4. Cloud Sync")
+    # print("0. Back to Main Menu")
+    # choice = input("\nEnter your choice: ")
+    # if choice == "1":
+    #     print("Advanced Note Management selected.")
+    #     # Implement advanced note management features here
+    # elif choice == "2":
+    #     print("Premium Support selected.")
+    #     # Implement premium support features here
+    # elif choice == "3":
+    #     print("Customizable Themes selected.")
+    #     # Implement customizable themes features here
+    # elif choice == "4":
+    #     print("Cloud Sync selected.")
+    #     # Implement cloud sync features here
+    # elif choice == "0":
+    #     return
+    # else:
+    #     print("Invalid option. Please try again.")
 
 users = read_users(f'{filepath}stinky.json') # main dictionary with all users
 
 while True:
-    show_menu()
-    choice = input("\nEnter your choice: ")
-    if choice == "1":
+    show_menu() # Display the menu
+    choice = input("\nEnter your choice: ") 
+    if choice == "1": # Add/Edit User
         print("You selected: Add/Edit User")
         user_id = input("Add user ID: ")
         if user_id in users:
@@ -202,7 +217,8 @@ while True:
         }
         write_users(f'{filepath}stinky.json', users)
         print(f"User {user_id} added successfully.")
-    elif choice == "2":
+
+    elif choice == "2": # Delete User
         print("You selected: Delete User")
         user_id = input("Enter user ID to delete: ")
         if user_id in users:
@@ -217,7 +233,8 @@ while True:
                 continue
         else:
             print(f"User {user_id} not found.")
-    elif choice == "3":
+
+    elif choice == "3": # Create Note
         print("You selected: Create Note")
         user_id = input("Log in to create a note for: ")
         password = input("Enter password: ")
@@ -237,7 +254,8 @@ while True:
         else:
             print("Incorrect password.")
             continue
-    elif choice == "4":
+
+    elif choice == "4": # Edit User Notes
         print("You selected: Edit Notes")
         user_id = input("Log in to edit notes for: ")
         password = input("Enter password: ")
@@ -246,7 +264,7 @@ while True:
         else:
             continue
         
-    elif choice == "5":
+    elif choice == "5": # Delete Note
         print("Delete a Note")
         user_id = input("Log in to delete a note for: ")
         password = input("Enter password: ")
@@ -257,12 +275,12 @@ while True:
             print("Incorrect password.")
             continue
 
-    elif choice == "6":
+    elif choice == "6": # Print All Public Notes
         system("clear")
         print(f"A list of all public notes:\n")
         list_all_public_notes(users)
 
-    elif choice == "7":
+    elif choice == "7": # ProUser Area
         pro_user_area()
 
     elif choice == "0":
