@@ -1,71 +1,103 @@
-<<<<<<< HEAD
 # StinkyNotes
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)
 
-StinkyNotes is a simple note-taking application that allows users to create, edit, and delete notes. Users can also mark notes as private or public.
 
-## Table of Contents
+StinkyNotes is a simple yet powerful note-taking application that enables users to create, edit, and manage notes efficiently. With support for privacy settings and user management, StinkyNotes is ideal for both personal and collaborative use. This application is designed for Ubuntu/Linux.
+📚 Table of Contents
 
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contribution Guidelines](#contribution-guidelines)
-- [License](#license)
+    ✨ Features
 
-## Features
+    🖼️ Screenshots
 
-- **User Management**: Add, edit, and delete users. ![User Management](https://img.icons8.com/ios-filled/50/000000/user.png)
-- **Note Creation**: Create notes with unique IDs. ![Note Creation](https://img.icons8.com/ios-filled/50/000000/note.png)
-- **Note Editing**: Edit existing notes, including their content and privacy settings. ![Note Editing](https://img.icons8.com/ios-filled/50/000000/edit.png)
-- **Note Deletion**: Delete notes as needed. ![Note Deletion](https://img.icons8.com/ios-filled/50/000000/delete.png)
-- **Privacy Settings**: Mark notes as private or public. ![Privacy Settings](https://img.icons8.com/ios-filled/50/000000/privacy.png)
-- **Data Persistence**: Notes and user data are stored in JSON files for persistence. ![Data Persistence](https://img.icons8.com/ios-filled/50/000000/json.png)
-- **Interactive Menu**: Navigate through the application using a user-friendly menu interface. ![Interactive Menu](https://img.icons8.com/ios-filled/50/000000/menu.png)
+    🚀 Installation
 
-## Installation
+    🎯 Usage
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/nicokuehn-dci/stinkynotes.git
-   ```
-2. Navigate to the project directory:
-   ```
-   cd stinkynotes
-   ```
-3. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+    🤝 Contribution Guidelines
 
-## Usage
+    📄 License
 
-1. Run the application:
-   ```
-   python stinky_start.py
-   ```
-2. Follow the on-screen instructions to add/edit users, create notes, and delete users.
+    💼 ProUser Features
 
-## Contribution Guidelines
+✨ Features
 
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix:
-   ```
-   git checkout -b feature-name
-   ```
-3. Commit your changes:
-   ```
-   git commit -m "Description of your changes"
-   ```
-4. Push to the branch:
-   ```
-   git push origin feature-name
-   ```
-5. Create a pull request.
+    👥 User Management: Add, edit, and delete users.
 
-## License
+    🆕 Note Creation: Create notes with unique IDs.
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-=======
-Created my own branch
->>>>>>> ekaterinasbranch
+    ✏️ Note Editing: Modify existing notes, including content and privacy settings.
+
+    🗑️ Note Deletion: Remove notes as needed.
+
+    🔒 Privacy Settings: Mark notes as private or public.
+
+    💾 Data Persistence: All notes and user data are stored in JSON files.
+
+    🧭 Interactive Menu: Navigate the application using a user-friendly menu interface.
+
+🖼️ Screenshots
+
+Below are some example screenshots of StinkyNotes in action:
+Main Menu	Note List	Edit Note
+![Main Menu](path/to/main ![Note List](path/to/note ![Edit Note](path/to/edit Replace the above image paths with your actual screenshot images.		
+🚀 Installation
+
+    Clone the repository:
+
+bash
+git clone https://github.com/nicokuehn-dci/stinkynotes.git
+
+Navigate to the project directory:
+
+bash
+cd stinkynotes
+
+Install dependencies:
+
+    bash
+    pip install -r requirements.txt
+
+🎯 Usage
+
+    Run the application:
+
+    bash
+    python stinky_start.py
+
+    Follow the on-screen instructions to add/edit users, create notes, and manage privacy settings.
+
+🤝 Contribution Guidelines
+
+    Fork the repository on GitHub.
+
+    Create a new branch for your feature or bugfix:
+
+bash
+git checkout -b feature-name
+
+Commit your changes:
+
+bash
+git commit -m "Description of your changes"
+
+Push to your branch:
+
+    bash
+    git push origin feature-name
+
+    Open a pull request.
+
+📄 License
+
+This project is licensed under the MIT License.
+
+💼 ProUser Features
+
+    💼 Advanced Note Management: ProUsers can access advanced note management features, including bulk note operations and enhanced privacy controls.
+
+    💼 Premium Support: ProUsers receive priority support and access to exclusive resources.
+
+    💼 Customizable Themes: ProUsers can customize the application's appearance with a variety of themes.
+
+    💼 Cloud Sync: ProUsers can sync their notes across multiple devices using cloud storage.
