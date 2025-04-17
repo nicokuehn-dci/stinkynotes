@@ -237,23 +237,28 @@ while True:
     elif choice == "3": # Create Note
         print("You selected: Create Note")
         user_id = input("Log in to create a note for: ")
-        password = input("Enter password: ")
-        if password == users[user_id]["password"]:
-            print("Logged in successfully.")
-            note_id = datetime.now().strftime("%Y%m%d%H%M%S")
-            note_content = input("Enter note content: ")
-            note_private = input("Is this note private? (yes/no): ").lower()
-            if note_private == "yes" or note_private == "y":
-                note_private = True
-            elif note_private == "no" or note_private == "n":
-                note_private = False
-            else:
-                print("Invalid input. Defaulting to public.")
-                note_private = True
-            create_note_json(user_id, note_id, note_content, note_private)
-        else:
-            print("Incorrect password.")
+        if user_id not in users:
+            print(f"User {user_id} not found.")
+            input()
             continue
+        else:
+            password = input("Enter password: ")
+            if password == users[user_id]["password"]:
+                print("Logged in successfully.")
+                note_id = datetime.now().strftime("%Y%m%d%H%M%S")
+                note_content = input("Enter note content: ")
+                note_private = input("Is this note private? (yes/no): ").lower()
+                if note_private == "yes" or note_private == "y":
+                    note_private = True
+                elif note_private == "no" or note_private == "n":
+                    note_private = False
+                else:
+                    print("Invalid input. Defaulting to public.")
+                    note_private = True
+                create_note_json(user_id, note_id, note_content, note_private)
+            else:
+                print("Incorrect password.")
+                continue
 
     elif choice == "4": # Edit User Notes
         print("You selected: Edit Notes")

@@ -1,0 +1,13 @@
+{
+    "user_id": "kate",
+    "notes": {
+        "20250417103516": {
+            "note_content": "Rubik's forever",
+            "note_private": false
+        },
+        "20250417103548": {
+            "note_content": "Kids are cool",
+            "note_private": true
+        }
+    }
+}

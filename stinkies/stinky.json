@@ -10,5 +10,21 @@
     "newest_user": {
         "fullname": "Another User",
         "password": "123456"
+    },
+    "chris": {
+        "fullname": "Christoph Schneider",
+        "password": "123456"
+    },
+    "nico": {
+        "fullname": "Nico Kuehn",
+        "password": "123456"
+    },
+    "kate": {
+        "fullname": "Ekaterina Nestoklon",
+        "password": "123456"
+    },
+    "naim": {
+        "fullname": "Naim Burrack",
+        "password": "123456"
     }
 }
