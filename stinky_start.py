@@ -66,6 +66,14 @@ def create_note_json(user_id, note_id, note_content, note_private):
     with open(f"{filepath}{user_id}.json", "w") as file:
         json.dump(data, file, indent=4)
 
+def bool_to_yes_no(b):
+    return "Yes" if b else "No"
+
+def yes_no_to_bool(text):
+    lookup = {"yes": True, "no": False}
+    return lookup.get(text.lower(), None)
+
+
 def edit_note_per_id(note_id, user_id):
     """Edits the content of a note for the user with the given ID."""
     with open(f"{filepath}{user_id}.json", "r") as file:
@@ -75,6 +83,15 @@ def edit_note_per_id(note_id, user_id):
     edited = prompt("Edit your note: ", default=original)
     print("Your new note: ", edited)
     notes[note_id]["note_content"] = edited
+    
+    original = bool_to_yes_no(notes[note_id]["note_private"])
+    edited = prompt("Edit your note status: ", default=original)
+    if edited.lower() != ("yes" or "no"):
+        edited = "Yes"
+        input("Invalid note status! Status set to private!")
+    print("Your new status: ", edited)
+    notes[note_id]["note_private"] = yes_no_to_bool(edited)
+    
     data["notes"] = notes
     with open(f"{filepath}{user_id}.json", "w") as file:
         json.dump(data, file, indent=4)
@@ -104,7 +121,10 @@ def edit_user_notes(user_id):
         formatted_date = timestamp_dt.strftime("%d.%m.%Y - %H:%M:%S")    
         print(f"Note #{index}:\n--------\n{formatted_date}\n{value['note_content']}\n")
 
-    counter = int(input("\nEnter Note-# please: ")) - 1
+    try:
+        counter = int(input("\nEnter Note-# please: ")) - 1
+    except:
+        counter = -1
 
     if 0 <= counter < len(notes_list):
         selected_key, selected_note = notes_list[counter]
@@ -127,7 +147,10 @@ def delete_user_note(user_id):
         formatted_date = timestamp_dt.strftime("%d.%m.%Y - %H:%M:%S")    
         print(f"Note #{index}:\n--------\n{formatted_date}\n{value['note_content']}\n")
 
-    counter = int(input("\nEnter Note-# please: ")) - 1
+    try:
+        counter = int(input("\nEnter Note-# please: ")) - 1
+    except:
+        counter = -1
 
     if 0 <= counter < len(notes_list):
         selected_key, selected_note = notes_list[counter]
