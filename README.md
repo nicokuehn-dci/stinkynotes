@@ -3,51 +3,43 @@
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)
 
 
-
 StinkyNotes is a simple yet powerful note-taking application that enables users to create, edit, and manage notes efficiently. With support for privacy settings and user management, StinkyNotes is ideal for both personal and collaborative use.
-Table of Contents
+📚 Table of Contents
 
-    Features
+    ✨ Features
 
-    Screenshots
+    🖼️ Screenshots
 
-    Installation
+    🚀 Installation
 
-    Usage
+    🎯 Usage
 
-    Contribution Guidelines
+    🤝 Contribution Guidelines
 
-    License
+    📄 License
 
-Features
+✨ Features
 
-    User Management: Add, edit, and delete users.
+    👥 User Management: Add, edit, and delete users.
 
-    Note Creation: Create notes with unique IDs.
+    🆕 Note Creation: Create notes with unique IDs.
 
-    Note Editing: Modify existing notes, including content and privacy settings.
+    ✏️ Note Editing: Modify existing notes, including content and privacy settings.
 
-    Note Deletion: Remove notes as needed.
+    🗑️ Note Deletion: Remove notes as needed.
 
-    Privacy Settings: Mark notes as private or public.
+    🔒 Privacy Settings: Mark notes as private or public.
 
-    Data Persistence: All notes and user data are stored in JSON files.
+    💾 Data Persistence: All notes and user data are stored in JSON files.
 
-    Interactive Menu: Navigate the application using a user-friendly menu interface.
+    🧭 Interactive Menu: Navigate the application using a user-friendly menu interface.
 
-Screenshots
+🖼️ Screenshots
 
 Below are some example screenshots of StinkyNotes in action:
-
-    Main Menu
-
-    ![Main Menu Screenshot](images/screenNote List**
-
-    ![Note List Screenshot](images/screenshotEdit Note**
-
-    ![Edit Note Screenshot](images/screenshot the above image paths with your actual screenshot images.*
-
-Installation
+Main Menu	Note List	Edit Note
+![Main Menu](path/to/main ![Note List](path/to/note ![Edit Note](path/to/edit Replace the above image paths with your actual screenshot images.		
+🚀 Installation
 
     Clone the repository:
 
@@ -64,7 +56,7 @@ Install dependencies:
     bash
     pip install -r requirements.txt
 
-Usage
+🎯 Usage
 
     Run the application:
 
@@ -73,9 +65,9 @@ Usage
 
     Follow the on-screen instructions to add/edit users, create notes, and manage privacy settings.
 
-Contribution Guidelines
+🤝 Contribution Guidelines
 
-    Fork the repository.
+    Fork the repository on GitHub.
 
     Create a new branch for your feature or bugfix:
 
@@ -94,8 +86,7 @@ Push to your branch:
 
     Open a pull request.
 
-License
+📄 License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License.
 
-Feel free to customize this README and add your own screenshots to showcase StinkyNotes!
