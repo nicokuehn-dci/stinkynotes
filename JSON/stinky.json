@@ -9,7 +9,8 @@
     },
     "nico_id3": {
         "fullname": "Mad Beats",
-        "password": "123456789"
+        "password": "123456789",
+        "pro_user": true
     },
     "chris_id4": {
         "fullname": "Christoph Schneider",

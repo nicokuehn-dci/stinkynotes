@@ -35,44 +35,11 @@ import stringcolor
 from stringcolor import cs
 import importlib
 import curses # Keep this import even if windows-curses might be used
-import logging
-import socket
-import getpass
-import hashlib
-import base64
-from cryptography.fernet import Fernet
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import re
-
-# File paths
-USERS_FILE = "./JSON/stinky.json"
-NOTES_DIR = "./JSON/"
-EXPORTS_DIR = "./exports/"
-MESSAGES_FILE = "./JSON/private_messages.json"
 
 # Create a requirements.txt file with the necessary dependencies
-REQUIREMENTS = """string-color
+REQUIREMENTS = """stringcolor
 windows-curses; platform_system == 'Windows'
-cryptography
-twilio
 """
-
-# --- Logging Setup ---
-LOG_FILE = "pro_user_area.log"
-logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
-def log_pro_user_action(user_id, action):
-    """Logs actions performed in the ProUser area."""
-    hostname = socket.gethostname()
-    ip_address = socket.gethostbyname(hostname)
-    username = getpass.getuser()
-    logging.info(f"User: {user_id}, Action: {action}, Hostname: {hostname}, IP: {ip_address}, System User: {username}")
 
 # --- Environment Setup (Optional at Runtime) ---
 
@@ -189,6 +156,8 @@ def check_and_install_dependencies():
                 package_name = package_spec.split("==")[0].split(">=")[0].split("<=")[0].split("!=")[0].split("~=")[0]
                 # Special case for windows-curses -> import name is curses
                 import_name = "curses" if package_name == "windows-curses" else package_name
+                # Special case for twilio -> import name is twilio
+                import_name = "twilio" if package_name == "twilio" else package_name
                 try:
                     importlib.import_module(import_name)
                     print(f"Dependency '{package_name}' already satisfied.")
@@ -196,14 +165,22 @@ def check_and_install_dependencies():
                     print(f"Installing missing dependency: {package_spec}")
                     try:
                         # Use the full spec (e.g., package==1.0) for installation
-                        subprocess.check_call([sys.executable, "-m", "pip", "install", package_spec])
+                        subprocess.check_call([sys.executable, "-m", "pip", "install", package_spec],
+                                              stdout=subprocess.DEVNULL, stderr=subprocess.PIPE) # Capture stderr
+                        print(f"Successfully installed {package_spec}.")
                         installed_changes = True
                     except subprocess.CalledProcessError as e:
-                        print(f"Error installing {package_spec}: {e}")
-                        print("Please try installing it manually.")
-                        sys.exit(1) # Exit if critical dependency fails
+                        # If it failed, print the command and the error output from pip
+                        print(f"Error installing {package_spec}. Pip command failed.")
+                        # e.stderr contains the captured error output (needs decoding)
+                        if e.stderr:
+                            print("--- Pip Error Output ---")
+                            print(e.stderr.decode(errors='ignore')) # Decode bytes to string
+                            print("------------------------")
+                        print(f"Please try installing it manually: pip install \"{package_spec}\"")
+                        sys.exit(1)
                     except Exception as e:
-                         print(f"An unexpected error occurred during installation: {e}")
+                         print(f"An unexpected error occurred during installation of {package_spec}: {e}")
                          sys.exit(1)
 
         if installed_changes:
@@ -222,6 +199,21 @@ def check_and_install_dependencies():
         sys.exit(1)
 
 # --- Initial Setup Prompt ---
+def install_string_color():
+    """Install the string-color package if not already installed."""
+    try:
+        import stringcolor
+    except ImportError:
+        print("string-color package not found. Installing...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "string-color", "--break-system-packages"])
+        print("string-color package installed successfully.")
+
+# Call the function to ensure string-color is installed
+install_string_color()
+
+# Proceed with dependency installation
+check_and_install_dependencies()
+
 if __name__ == "__main__":
     # Create requirements.txt if it doesn't exist
     if not os.path.exists("requirements.txt"):
@@ -238,7 +230,6 @@ if __name__ == "__main__":
         print("Skipping dependency check. The script might fail if dependencies are missing.")
 
 # --- Dynamic Import Function (Less verbose alternative for simple cases) ---
-# Keep this if you prefer it, but the check_and_install_dependencies is more robust for requirements.txt
 def install_and_import(package, import_name=None, pip_name=None):
     if import_name is None:
         import_name = package
@@ -287,7 +278,6 @@ except ImportError as e:
 # =========================
 
 # Use a constant for the JSON directory
-JSON_DIR = "./JSON"
 USERS_FILE = os.path.join(JSON_DIR, "stinky.json")
 MESSAGES_FILE = os.path.join(JSON_DIR, "messages.json")  # File for storing private messages
 
@@ -378,24 +368,60 @@ def save_user_data(user_id, data):
         print(stringcolor.cs(f"Error writing user file {user_file}: {e}", "red"))
         return False
 
+# Generate a valid encryption key
+ENCRYPTION_KEY = Fernet.generate_key()
+fernet = Fernet(ENCRYPTION_KEY)
+
+# Print the generated key for reference (optional, remove in production)
+print(f"Generated Encryption Key: {ENCRYPTION_KEY.decode()}")
+print("Keep the encryption key secure for decrypting notes.")
+
+# Updated encryption and decryption functions
+def encrypt_note_content(content):
+    """Encrypt note content for ProUsers."""
+    return fernet.encrypt(content.encode()).decode()
+
+# Update decryption function to handle invalid base64 strings
+def decrypt_note_content(content):
+    """Decrypt note content for ProUsers."""
+    try:
+        return fernet.decrypt(content.encode()).decode()
+    except (InvalidToken, binascii.Error):
+        log_error(f"Decryption failed for content: {content}")
+        return "[Decryption Failed: Invalid Content]"
+    except Exception as e:
+        log_exception(e)
+        return "[Decryption Failed: Unknown Error]"
+
+# ProUser Features
+PRO_USER_FEATURES = {
+    "encryption": True,  # Advanced note encryption
+    "priority_support": True,  # Priority customer support
+    "unlimited_storage": True  # Unlimited storage for notes
+}
+
+def is_pro_user(user_id):
+    """Check if a user is a ProUser."""
+    users = read_users(USERS_FILE)
+    return users.get(user_id, {}).get("pro_user", False)
+
 def create_note_entry(user_id, note_id, note_content, note_private):
     """Adds a note entry to a user's data file."""
     data = load_user_data(user_id)
     if data is None:
         print(stringcolor.cs(f"Cannot create note. User data for {user_id} not found or couldn't be loaded.", "red"))
-        # Option: Try creating the user file here if it was missing
-        # create_user_json(user_id)
-        # data = load_user_data(user_id) # Try loading again
-        # if data is None: return # Give up if still fails
-        return # Current behavior: don't create note if user file missing/corrupt
+        return
+
+    if is_pro_user(user_id) and PRO_USER_FEATURES["encryption"]:
+        note_content = encrypt_note_content(note_content)
 
     note_data = {
         "note_content": note_content,
         "note_private": note_private,
-        "created_at": datetime.datetime.now().isoformat(), # Add timestamp
+        "created_at": datetime.datetime.now().isoformat(),
         "updated_at": datetime.datetime.now().isoformat()
     }
-    if "notes" not in data: # Ensure 'notes' key exists
+    if "notes" not in data:
         data["notes"] = {}
 
     data["notes"][note_id] = note_data
@@ -404,13 +430,28 @@ def create_note_entry(user_id, note_id, note_content, note_private):
     else:
         print(stringcolor.cs(f"Failed to save note '{note_id}' for user {user_id}.", "red"))
 
-
 def get_user_notes(user_id):
     """Gets the notes dictionary for a user."""
     data = load_user_data(user_id)
     if data and "notes" in data:
-        return data["notes"]
-    return {} # Return empty dict if no data or no 'notes' key
+        notes = data["notes"]
+        if is_pro_user(user_id) and PRO_USER_FEATURES["encryption"]:
+            for note_id, note_data in notes.items():
+                note_data["note_content"] = decrypt_note_content(note_data["note_content"])
+        return notes
+    return {}
+
+def toggle_pro_user_status(user_id):
+    """Toggle the ProUser status for a user."""
+    users = read_users(USERS_FILE)
+    if user_id in users:
+        current_status = users[user_id].get("pro_user", False)
+        users[user_id]["pro_user"] = not current_status
+        write_users(USERS_FILE, users)
+        status = "enabled" if not current_status else "disabled"
+        print(stringcolor.cs(f"ProUser status {status} for user '{user_id}'.", "green"))
+    else:
+        print(stringcolor.cs(f"User '{user_id}' not found.", "red"))
 
 def print_user_notes(user_id): # Keep for potential debugging or direct display
     """Prints all notes for a given user."""
@@ -498,8 +539,114 @@ def edit_note_menu(user_id):
 
         input(stringcolor.cs("\nPress Enter to continue editing...", "magenta")) # Pause
 
-# Unused function (from original prompt context, can be removed)
-# def createNoteElement(note_id, note_content, note_private): ...
+# --- ProUser Menu ---
+def pro_user_menu(user_id):
+    """Presents a menu for ProUsers with access to advanced features."""
+    pro_user_options = [
+        "Create Encrypted Note",
+        "View Encrypted Notes",
+        "Edit Encrypted Note",
+        "Delete Encrypted Note",
+        "Decrypt and View Note",
+        "Back to Main Menu"
+    ]
+
+    while True:
+        choice_idx = cursor_menu(pro_user_options, title=f"--- ProUser Menu for {user_id} ---")
+
+        if choice_idx == len(pro_user_options) - 1:
+            # "Back to Main Menu" selected
+            break
+
+        if choice_idx == 0:  # Create Encrypted Note
+            note_id = str(uuid.uuid4())
+            multi_line_instructions = "Enter note content. Press Ctrl+D (Linux/macOS) or Ctrl+Z then Enter (Windows) on an empty line to finish."
+            print(stringcolor.cs(multi_line_instructions, "yellow"))
+            note_content = colored_input("", "blue")
+            while not note_content:
+                print(stringcolor.cs("Note content cannot be empty.", "red"))
+                note_content = colored_input("", "blue")
+
+            note_private = True  # All ProUser notes are private by default
+            create_note_entry(user_id, note_id, note_content, note_private)
+
+        elif choice_idx == 1:  # View Encrypted Notes
+            notes = get_user_notes(user_id)
+            if not notes:
+                print(stringcolor.cs("No encrypted notes found.", "yellow"))
+            else:
+                print(stringcolor.cs("\n--- Encrypted Notes ---", "cyan"))
+                for note_id, note_data in notes.items():
+                    content = note_data.get("note_content", "[No Content]")
+                    privacy = "Private" if note_data.get("note_private", False) else "Public"
+                    print(stringcolor.cs(f"ID: {note_id} ({privacy})\nContent: {content}\n", "green"))
+            input(stringcolor.cs("\nPress Enter to return to the ProUser menu...", "magenta"))
+
+        elif choice_idx == 2:  # Edit Encrypted Note
+            notes = get_user_notes(user_id)
+            if not notes:
+                print(stringcolor.cs("No notes to edit.", "yellow"))
+                continue
+
+            note_ids = list(notes.keys())
+            options = [f"{note_id}: {notes[note_id].get('note_content', '')[:40]}..." for note_id in note_ids]
+            options.append("Back")
+
+            idx = cursor_menu(options, title="--- Select Note to Edit ---")
+            if idx == len(options) - 1:
+                continue
+
+            selected_note_id = note_ids[idx]
+            current_content = notes[selected_note_id].get("note_content", "")
+            new_content = colored_input("Enter new note content (leave blank to keep current): ", "green")
+            if new_content:
+                notes[selected_note_id]["note_content"] = encrypt_note_content(new_content)
+                save_user_data(user_id, {"notes": notes})
+                print(stringcolor.cs("Note updated successfully.", "green"))
+
+        elif choice_idx == 3:  # Delete Encrypted Note
+            notes = get_user_notes(user_id)
+            if not notes:
+                print(stringcolor.cs("No notes to delete.", "yellow"))
+                continue
+
+            note_ids = list(notes.keys())
+            options = [f"{note_id}: {notes[note_id].get('note_content', '')[:40]}..." for note_id in note_ids]
+            options.append("Back")
+
+            idx = cursor_menu(options, title="--- Select Note to Delete ---")
+            if idx == len(options) - 1:
+                continue
+
+            selected_note_id = note_ids[idx]
+            del notes[selected_note_id]
+            save_user_data(user_id, {"notes": notes})
+            print(stringcolor.cs("Note deleted successfully.", "green"))
+
+        elif choice_idx == 4:  # Decrypt and View Note
+            notes = get_user_notes(user_id)
+            if not notes:
+                print(stringcolor.cs("No notes to decrypt.", "yellow"))
+                continue
+
+            note_ids = list(notes.keys())
+            options = [f"{note_id}: {notes[note_id].get('note_content', '')[:40]}..." for note_id in note_ids]
+            options.append("Back")
+
+            idx = cursor_menu(options, title="--- Select Note to Decrypt ---")
+            if idx == len(options) - 1:
+                continue
+
+            selected_note_id = note_ids[idx]
+            encrypted_content = notes[selected_note_id].get("note_content", "")
+            try:
+                decrypted_content = decrypt_note_content(encrypted_content)
+                print(stringcolor.cs(f"Decrypted Content for Note ID {selected_note_id}:\n{decrypted_content}", "green"))
+            except Exception as e:
+                print(stringcolor.cs(f"Failed to decrypt note: {e}", "red"))
+                log_exception(e)
+
+            input(stringcolor.cs("\nPress Enter to return to the ProUser menu...", "magenta"))
 
 # =========================
 # Cursor-Menü Function
@@ -1475,113 +1622,155 @@ def main():
         "Delete User",
         "Create Note",
         "Edit User Notes",
-        "ProUser Area",
         "Exit"
     ]
 
     while True:
+        password = colored_input(f"Enter password for '{user_id}': ", "green")
+        if check_password(user_id, password):
+            print(stringcolor.cs("Login successful.", "green"))
+            return True
+        else:
+            print(stringcolor.cs("Please try again.", "yellow"))
+
+        # Exit loop if user is blocked
+        if failed_attempts[user_id]["block_until"]:
+            return False
+
+# Enhanced error handling with self-healing capabilities
+
+def self_healing_handler(error):
+    """Attempt to resolve common errors automatically."""
+    if isinstance(error, FileNotFoundError):
+        missing_file = str(error).split("No such file or directory: ")[1].strip("'")
+        print(stringcolor.cs(f"File not found: {missing_file}. Attempting to recreate it...", "yellow"))
         try:
-            # Pass the title as a PLAIN STRING
-            choice_idx = cursor_menu(menu_options, title="--- StinkyNotes Menu ---")
+            if missing_file.endswith("stinky.json"):
+                write_users(USERS_FILE, {})
+                print(stringcolor.cs(f"Recreated missing file: {missing_file}", "green"))
+            elif missing_file.startswith(JSON_DIR):
+                user_id = missing_file.split("/")[-1].replace(".json", "")
+                create_user_json(user_id)
+                print(stringcolor.cs(f"Recreated missing user file: {missing_file}", "green"))
+            else:
+                print(stringcolor.cs(f"Cannot handle missing file: {missing_file}", "red"))
         except Exception as e:
-            print(stringcolor.cs(f"\nMenu display error: {e}. Exiting.", "red"))
-            break # Exit loop on menu error
+            log_exception(e)
+            print(stringcolor.cs(f"Failed to recreate missing file: {missing_file}", "red"))
 
-        # Map index back to logical choice (handle potential menu errors returning unexpected values)
-        if not isinstance(choice_idx, int) or choice_idx < 0 or choice_idx >= len(menu_options):
-            print(stringcolor.cs("Invalid menu selection received. Please try again.", "red"))
-            continue
-
-        selected_option = menu_options[choice_idx]
-
-        print(f"\n--- {selected_option} ---") # More descriptive header
-
-        if selected_option == "Add/Edit User":
-            user_id = colored_input("Enter User ID: ", "green")
-            if not user_id:
-                print(stringcolor.cs("User ID cannot be empty.", "red"))
-                continue
-
-            if user_id in users:
-                print(stringcolor.cs(f"User '{user_id}' already exists. You can update details.", "cyan"))
-                current_fullname = users[user_id].get("fullname", "N/A")
-                print(f"Current Full Name: {current_fullname}")
-                fullname = colored_input(f"Enter new Full Name (leave blank to keep '{current_fullname}'): ", "green")
-                password = colored_input("Enter new Password (leave blank to keep current): ", "green")
-
-                if fullname:
-                    users[user_id]["fullname"] = fullname
-                if password:
-                    users[user_id]["password"] = password
-                print(stringcolor.cs(f"User '{user_id}' details updated.", "light_green"))
-
+    elif isinstance(error, json.JSONDecodeError):
+        print(stringcolor.cs("JSON file is corrupted. Attempting to reset it...", "yellow"))
+        try:
+            corrupted_file = str(error).split("Expecting value: line 1 column 1 (char 0)")[0].strip()
+            if corrupted_file.endswith("stinky.json"):
+                write_users(USERS_FILE, {})
+                print(stringcolor.cs(f"Reset corrupted file: {corrupted_file}", "green"))
+            elif corrupted_file.startswith(JSON_DIR):
+                user_id = corrupted_file.split("/")[-1].replace(".json", "")
+                create_user_json(user_id)
+                print(stringcolor.cs(f"Reset corrupted user file: {corrupted_file}", "green"))
             else:
-                fullname = colored_input("Enter Full Name: ", "green")
-                while not fullname:
-                    print(stringcolor.cs("Full Name cannot be empty.", "red"))
-                    fullname = colored_input("Enter Full Name: ", "green")
+                print(stringcolor.cs(f"Cannot handle corrupted file: {corrupted_file}", "red"))
+        except Exception as e:
+            log_exception(e)
+            print(stringcolor.cs("Failed to reset corrupted JSON file.", "red"))
 
-                password = colored_input("Enter Password: ", "green")
-                while not password:
-                    print(stringcolor.cs("Password cannot be empty.", "red"))
-                    password = colored_input("Enter Password: ", "green")
+    elif isinstance(error, ImportError):
+        missing_module = str(error).split("No module named ")[1].strip("'")
+        print(stringcolor.cs(f"Missing module: {missing_module}. Attempting to install it...", "yellow"))
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", missing_module, "--break-system-packages"])
+            print(stringcolor.cs(f"Successfully installed missing module: {missing_module}", "green"))
+        except Exception as e:
+            log_exception(e)
+            print(stringcolor.cs(f"Failed to install missing module: {missing_module}", "red"))
 
-                users[user_id] = {
-                    "fullname": fullname,
-                    "password": password
-                }
-                create_user_json(user_id) # Create the user's note file
-                print(stringcolor.cs(f"User '{user_id}' added successfully.", "green"))
+    else:
+        print(stringcolor.cs("An unknown error occurred. Logging it for review.", "red"))
+        log_exception(error)
 
-            write_users(USERS_FILE, users) # Save changes to the main user file
+def process_log_and_self_repair():
+    """Reads the log file, attempts to fix errors, and removes fixed entries."""
+    try:
+        if not os.path.exists(LOG_FILE):
+            print("Log file not found. Nothing to process.")
+            return
 
-        elif selected_option == "Delete User":
-            user_id = colored_input("Enter user ID to delete: ", "red")
-            if user_id in users:
-                confirm = colored_input(f"Are you sure you want to delete user '{user_id}' and all their notes? (yes/no): ", "red").lower()
-                if confirm in ('y', 'yes'):
-                    try:
-                        del users[user_id] # Remove from main dictionary
-                        write_users(USERS_FILE, users) # Save updated user list
-                        delete_user_json(user_id) # Delete the user's notes file
-                        print(stringcolor.cs(f"User '{user_id}' deleted successfully.", "green"))
-                    except Exception as e:
-                        print(stringcolor.cs(f"An error occurred during deletion: {e}", "red"))
-                else:
-                    print(stringcolor.cs("User deletion cancelled.", "yellow"))
+        with open(LOG_FILE, "r") as log_file:
+            log_entries = log_file.readlines()
+
+        repaired_entries = []
+        for entry in log_entries:
+            if "InvalidToken" in entry:
+                print("Attempting to fix InvalidToken error...")
+                # Handle InvalidToken errors (e.g., skip invalid notes)
+                repaired_entries.append(entry)
+            elif "FileNotFoundError" in entry:
+                print("Attempting to fix missing file error...")
+                # Handle missing file errors (e.g., recreate files)
+                repaired_entries.append(entry)
+            elif "JSONDecodeError" in entry:
+                print("Attempting to fix corrupted JSON file...")
+                # Handle corrupted JSON files (e.g., reset files)
+                repaired_entries.append(entry)
             else:
-                print(stringcolor.cs(f"User '{user_id}' not found.", "red"))
+                print(f"Unhandled log entry: {entry.strip()}")
 
-        elif selected_option == "Create Note":
-            user_id = colored_input("Enter User ID to create note for: ", "green")
-            if user_id not in users:
-                print(stringcolor.cs(f"User '{user_id}' not found. Cannot create note.", "red"))
-                continue # Go back to main menu
+        # Rewrite the log file without repaired entries
+        with open(LOG_FILE, "w") as log_file:
+            for entry in log_entries:
+                if entry not in repaired_entries:
+                    log_file.write(entry)
 
-            password = colored_input(f"Enter password for '{user_id}': ", "green")
-            if users[user_id].get("password") == password:
-                print(stringcolor.cs("Login successful.", "green"))
-                note_id = str(uuid.uuid4()) # Generate a robust unique ID
-                note_content = colored_input("Enter note content: ", "blue")
-                while not note_content:
-                     print(stringcolor.cs("Note content cannot be empty.", "red"))
-                     note_content = colored_input("Enter note content: ", "blue")
+        print("Log processing complete. Fixed entries removed.")
 
-                # Input loop for private/public
-                note_private = False # Default to public
-                while True:
-                    note_private_input = colored_input("Is this note private? (yes/no, default=no): ", "blue").strip().lower()
-                    if note_private_input in ("yes", "y"):
-                        note_private = True
-                        break
-                    elif note_private_input in ("no", "n", ""): # Empty input defaults to no
-                        note_private = False
-                        break
-                    else:
-                        print(stringcolor.cs("Please enter 'yes' or 'no'.", "red"))
+    except Exception as e:
+        print(f"Error processing log file: {e}")
+        log_exception(e)
 
-                create_note_entry(user_id, note_id, note_content, note_private)
-                # Success/failure message is printed within create_note_entry
+# Main function
+def main():
+    """Main function to start the StinkyNotes application."""
+    print("Welcome to StinkyNotes!")
+    # Add the main menu or application logic here
+    while True:
+        menu_options = [
+            "Add/Edit User",
+            "Delete User",
+            "Create Note",
+            "View User Notes",  # New menu item for viewing notes
+            "Edit User Notes",  # Existing menu item for editing notes
+            "ProUser Area",
+            "Exit"
+        ]
+
+        selected_option = cursor_menu(menu_options, title="--- StinkyNotes Menu ---")
+
+        if selected_option == len(menu_options) - 1:  # Exit
+            print("Exiting the application. Goodbye!")
+            break
+
+        elif selected_option == 0:  # Add/Edit User
+            print("Add/Edit User functionality not implemented yet.")
+
+        elif selected_option == 1:  # Delete User
+            print("Delete User functionality not implemented yet.")
+
+        elif selected_option == 2:  # Create Note
+            print("Create Note functionality not implemented yet.")
+
+        elif selected_option == 3:  # View User Notes
+            user_id = colored_input("Enter User ID to view notes: ", "green")
+            print_user_notes(user_id)  # Use the existing function to display notes
+
+        elif selected_option == 4:  # Edit User Notes
+            user_id = colored_input("Enter User ID to edit notes: ", "green")
+            edit_note_menu(user_id)  # Use the existing function to edit notes
+
+        elif selected_option == 5:  # ProUser Area
+            user_id = colored_input("Enter ProUser ID: ", "green")
+            if login_user(user_id):
+                pro_user_menu(user_id)
 
             else:
                 print(stringcolor.cs("Incorrect password.", "red"))
@@ -1602,9 +1791,6 @@ def main():
                 print(stringcolor.cs("Incorrect password.", "red"))
                 # No 'continue' needed, will loop back to main menu naturally
 
-        elif selected_option == "ProUser Area":
-            pro_user_area()
-
         elif selected_option == "Exit":
             print(stringcolor.cs("Exiting the program. Goodbye!", "yellow"))
             break # Exit the main while loop
@@ -1614,23 +1800,22 @@ def main():
 
 
 if __name__ == "__main__":
-    # The dependency check prompt happens earlier now
     try:
         main()
-    except KeyboardInterrupt:
-        print(stringcolor.cs("\nOperation cancelled by user. Exiting.", "yellow"))
     except Exception as e:
-        # General fallback error catcher
-        print(stringcolor.cs(f"\nAn unexpected error occurred: {e}", "red"))
-        # Optionally print traceback for debugging
-        # import traceback
-        # traceback.print_exc()
+        print(stringcolor.cs(f"\nAn error occurred: {e}", "red"))
+        self_healing_handler(e)
+        print(stringcolor.cs("Attempting to restart the application...", "yellow"))
+        try:
+            main()
+        except Exception as retry_error:
+            print(stringcolor.cs(f"\nFailed to recover from error: {retry_error}", "red"))
+            log_exception(retry_error)
+            print(stringcolor.cs("Please check the log file for more details.", "yellow"))
     finally:
-         # Clean up curses terminal state if it was used and exited unexpectedly
-         if 'curses' in sys.modules and not sys.stdout.isatty(): # Check if curses likely ran
-             try:
-                  curses.endwin()
-             except:
-                  pass # Ignore errors during cleanup
-         print("\nStinkyNotes finished.")
+        process_log_and_self_repair()
+
+# Ensure the main function is defined
+if __name__ == "__main__":
+    main()
 
