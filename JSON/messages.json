@@ -1,0 +1,15 @@
+{
+    "messages": {
+        "f12cbe8f-2eb0-4bfd-8655-9ddbaa415eba": {
+            "sender_id": "nico_id3",
+            "recipient_id": "naim_id1",
+            "subject": "this is a new message",
+            "content": "[ENCRYPTED MESSAGE]",
+            "timestamp": "2025-04-18T17:39:15.774207",
+            "read": false,
+            "is_encrypted": true,
+            "encrypted_data": "Z0FBQUFBQm9BbklqbVF3SS02SEhCMTBlblVERWszbFlNbU9RNUpkUFdibnIwdkRuaFpTZ01WV09qRld2TENuN2Z1QVA2dC1FNlpNTDVMbjdNUmt0dmdsa3l1a1ptRENTczVYbjZyX1lOS0JyT25CT1c2Q3lHc1U9",
+            "salt": "Z8FpA-yDw8UO4IA6zXG7IA=="
+        }
+    }
+}

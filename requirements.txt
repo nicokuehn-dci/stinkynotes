@@ -1,2 +1,4 @@
-stringcolor
-curses; platform_system == 'Windows'
+string-color
+windows-curses; platform_system == 'Windows'
+cryptography
+twilio

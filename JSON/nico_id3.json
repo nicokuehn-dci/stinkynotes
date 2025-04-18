@@ -3,7 +3,8 @@
     "notes": {
         "20250415115351": {
             "note_content": "no brain, no pain",
-            "note_private": true
+            "note_private": true,
+            "is_encrypted": false
         },
         "ae2800e0-8eff-4f00-84b3-5824b4bfb002": {
             "note_content": "new stuff in stinkynotes and it works, finally",
